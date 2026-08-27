@@ -17,8 +17,9 @@ SCHEMA_PATH = SOURCE_DIR / "type_schema.json"
 DIST_DIR = ROOT / "dist"
 ARCHIVE_NAME = "Easier Hunting - TU4.1.zip"
 MOD_NAME = "Easier Hunting"
-MOD_VERSION = "1.0.0"
-MULTIPLIER = 4
+MOD_VERSION = "1.2.0"
+MULTIPLIER = 3
+RESISTANCE_ADDEND = 20
 WEAPON_DATA_HASH = 0x045CB10D
 ZIP_TIMESTAMP = (1980, 1, 1, 0, 0, 0)
 
@@ -27,6 +28,8 @@ ZIP_TIMESTAMP = (1980, 1, 1, 0, 0, 0)
 class FieldSpec:
     type_hash: int
     name: str
+    scale_with_multiplier: bool = True
+    addend: int = 0
     positive_only: bool = True
 
 
@@ -63,7 +66,10 @@ WEAPON_FIELDS = (
 TARGETS = (
     (
         Path("natives/STM/GameDesign/Common/Equip/ArmorData.user.3"),
-        (FieldSpec(0x35D72ED3, "_Defense"),),
+        (
+            FieldSpec(0x35D72ED3, "_Defense"),
+            FieldSpec(0x35D72ED3, "_Resistance", scale_with_multiplier=False, addend=RESISTANCE_ADDEND),
+        ),
     ),
     (
         Path("natives/STM/GameDesign/Common/Equip/ArmorUpgradeData.user.3"),
@@ -71,7 +77,10 @@ TARGETS = (
     ),
     (
         Path("natives/STM/GameDesign/Otomo/DataParam/OtomoArmorData.user.3"),
-        (FieldSpec(0xF2EF6D9F, "_Defense"),),
+        (
+            FieldSpec(0xF2EF6D9F, "_Defense"),
+            FieldSpec(0xF2EF6D9F, "_AttributeResist", scale_with_multiplier=False, addend=RESISTANCE_ADDEND),
+        ),
     ),
 ) + tuple(
     (Path(f"natives/STM/GameDesign/Common/Weapon/{weapon}.user.3"), WEAPON_FIELDS)
@@ -204,6 +213,26 @@ def resolve_fields(specs: tuple[FieldSpec, ...], schema: dict) -> tuple[dict[Fie
     return definitions, {type_hash: tuple(items) for type_hash, items in grouped.items()}
 
 
+def value_offsets(data: bytearray, location: int | tuple[int, int], field: dict) -> tuple[int, ...]:
+    if isinstance(location, int):
+        return (location,)
+
+    array_offset, count = location
+    offset = array_offset + 4
+    offsets = []
+    for _ in range(count):
+        offset = align(offset, field["align"])
+        offsets.append(offset)
+        offset = value_end(data, offset, field)
+    return tuple(offsets)
+
+
+def transformed_value(value: int, spec: FieldSpec, multiplier: int) -> int:
+    if spec.scale_with_multiplier and (value > 0 or not spec.positive_only):
+        value *= multiplier
+    return value + spec.addend
+
+
 def transform(source: Path, specs: tuple[FieldSpec, ...], multiplier: int, schema: dict) -> tuple[bytes, dict[str, MutationStats]]:
     data = bytearray(source.read_bytes())
     data_start, records = read_rsz(data)
@@ -217,19 +246,17 @@ def transform(source: Path, specs: tuple[FieldSpec, ...], multiplier: int, schem
 
     for type_hash, fields in instances:
         for spec in specs_by_type.get(type_hash, ()):
-            field_offset = fields[spec.name]
-            if not isinstance(field_offset, int):
-                raise ValueError(f"{spec.name} unexpectedly resolved to an array")
-            field_type = definitions[spec]["type"]
-            original = integer_value(data, field_offset, field_type)
-            replacement = original * multiplier if not spec.positive_only or original > 0 else original
-            write_integer(data, field_offset, field_type, replacement)
-            expected[spec].append(replacement)
-            stat = stats[spec]
-            stat[0] += 1
-            if replacement != original:
-                stat[1] += 1
-            stat[2] = max(stat[2], replacement)
+            field = definitions[spec]
+            for field_offset in value_offsets(data, fields[spec.name], field):
+                original = integer_value(data, field_offset, field["type"])
+                replacement = transformed_value(original, spec, multiplier)
+                write_integer(data, field_offset, field["type"], replacement)
+                expected[spec].append(replacement)
+                stat = stats[spec]
+                stat[0] += 1
+                if replacement != original:
+                    stat[1] += 1
+                stat[2] = max(stat[2], replacement)
 
     if any(not values for values in expected.values()):
         missing = [spec.name for spec, values in expected.items() if not values]
@@ -242,7 +269,11 @@ def transform(source: Path, specs: tuple[FieldSpec, ...], multiplier: int, schem
     actual = {spec: [] for spec in specs}
     for type_hash, fields in verify_instances:
         for spec in specs_by_type.get(type_hash, ()):
-            actual[spec].append(integer_value(data, fields[spec.name], definitions[spec]["type"]))
+            field = definitions[spec]
+            actual[spec].extend(
+                integer_value(data, field_offset, field["type"])
+                for field_offset in value_offsets(data, fields[spec.name], field)
+            )
     if actual != expected:
         raise ValueError(f"post-edit value verification failed for {source.name}")
 
@@ -265,7 +296,7 @@ def build_archive(output: Path, multiplier: int, schema: dict) -> Path:
         (
             f"name={MOD_NAME}",
             f"version={MOD_VERSION}",
-            f"description={MULTIPLIER}x armor defense, weapon raw attack, and weapon elemental attack.",
+            f"description={MULTIPLIER}x armor and weapon stats, plus {RESISTANCE_ADDEND} to all armor elemental resistances.",
             "author=OpenCode",
             "",
         )

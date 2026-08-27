@@ -1,8 +1,9 @@
 # Easier Hunting
 
 `Easier Hunting` is a Monster Hunter Wilds TU4.1 stat mod for offline or
-private play. It multiplies the selected equipment stats by **4x** while
-leaving unrelated systems untouched.
+private play. It multiplies the selected equipment stats by **3x** while
+adding **20** to each armor elemental resistance, while leaving unrelated
+systems untouched.
 
 ## Effects
 
@@ -10,17 +11,21 @@ leaving unrelated systems untouched.
 
 | Scope | Modified data | Result |
 | --- | --- | --- |
-| Hunter armor | Base defense | 4x |
-| Otomo armor | Base defense | 4x |
-| Armor upgrades | Defense gained per upgrade level | 4x |
+| Hunter armor | Base defense | 3x |
+| Hunter armor | Fire, water, thunder, ice, and dragon resistance | +20 each |
+| Otomo armor | Base defense | 3x |
+| Otomo armor | Elemental resistance | +20 each |
+| Armor upgrades | Defense gained per upgrade level | 3x |
 
 Including the upgrade increment means fully upgraded armor receives the same
-fourfold treatment instead of only multiplying its unupgraded base value.
+threefold treatment instead of only multiplying its unupgraded base value.
+The resistance bonus is additive, so a resistance of `-20` becomes `0`, a
+resistance of `0` becomes `20`, and a resistance of `15` becomes `35`.
 
 ### Hunter Weapons
 
 All 14 hunter weapon data files are included. For every weapon record, the
-following positive values are multiplied by 4:
+following positive values are multiplied by 3:
 
 | Field | In-game meaning |
 | --- | --- |
@@ -70,7 +75,7 @@ Before enabling Easier Hunting:
 
 Do not enable Easier Hunting together with another mod that replaces any of
 these same armor or weapon data files. The last-installed file wins, which can
-make the visible stats inconsistent with the intended 4x values.
+make the visible stats inconsistent with the intended 3x values.
 
 ## Manual Test Checklist
 
@@ -79,10 +84,11 @@ After loading a save, verify at least one armor piece and one weapon:
 1. Open equipment details for a hunter armor piece and compare its defense to
    its normal value.
 2. Check the same armor after upgrades if it has upgrade levels applied.
-3. Open a hunter weapon's detail page and verify raw attack is 4x.
-4. For a weapon with innate fire, water, thunder, ice, or dragon, verify its
-   displayed element value is 4x.
-5. For a weapon without innate element, element should remain zero.
+3. Open a hunter weapon's detail page and verify raw attack is 3x.
+4. Verify each listed elemental resistance receives a +20 increase.
+5. For a weapon with innate fire, water, thunder, ice, or dragon, verify its
+   displayed element value is 3x.
+6. For a weapon without innate element, element should remain zero.
 
 ## Repository Layout
 
@@ -138,9 +144,12 @@ Validation checks all of the following:
 - The archive contains exactly `modinfo.ini` plus 17 game data files.
 - The ZIP has no directory entries, avoiding FMM directory-copy errors.
 - Every RSZ instance stream reaches EOF before and after transformation.
-- Every changed payload exactly matches a fresh 4x rebuild from `source/`.
-- Positive stat values are multiplied while zero and negative sentinel values
-  are preserved.
+- Every changed payload exactly matches a fresh 3x and +20 resistance rebuild
+  from `source/`.
+- Positive attack and defense values are multiplied while zero and negative
+  sentinel values are preserved.
+- Armor resistance arrays are adjusted element-by-element by +20, including
+  negative and zero values.
 
 ## Updating For A Future Game Patch
 

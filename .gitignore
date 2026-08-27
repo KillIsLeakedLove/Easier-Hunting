@@ -1,0 +1,4 @@
+# Generated archives and extracted payloads can be rebuilt with tools/build_mod.py.
+build/
+*.pyc
+__pycache__/

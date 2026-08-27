@@ -1,0 +1,1210 @@
+{
+  "0": {
+    "crc": "0",
+    "fields": [],
+    "name": ""
+  },
+  "16bbc454": {
+    "crc": "491213",
+    "fields": [
+      {
+        "align": 4,
+        "array": true,
+        "name": "_Values",
+        "native": false,
+        "original_type": "ace.user_data.ExcelUserData.cData",
+        "size": 4,
+        "type": "Object"
+      }
+    ],
+    "name": "app.user_data.ArmorUpgradeData"
+  },
+  "16cc7dce": {
+    "crc": "238fb2c9",
+    "fields": [
+      {
+        "align": 4,
+        "array": false,
+        "name": "_Value",
+        "native": false,
+        "original_type": "System.Int32",
+        "size": 4,
+        "type": "S32"
+      }
+    ],
+    "name": "app.EquipDef.SlotLevel_Serializable"
+  },
+  "1aa7160d": {
+    "crc": "5c1f2dca",
+    "fields": [
+      {
+        "align": 4,
+        "array": false,
+        "name": "_Value",
+        "native": false,
+        "original_type": "System.Int32",
+        "size": 4,
+        "type": "S32"
+      }
+    ],
+    "name": "app.ArmorDef.ARMOR_PARTS_Serializable"
+  },
+  "229a3ad8": {
+    "crc": "51057f13",
+    "fields": [
+      {
+        "align": 4,
+        "array": false,
+        "name": "_Value",
+        "native": false,
+        "original_type": "System.Int32",
+        "size": 4,
+        "type": "S32"
+      }
+    ],
+    "name": "app.CustomizePatternID.ID_Serializable"
+  },
+  "237950f0": {
+    "crc": "ca3d1641",
+    "fields": [
+      {
+        "align": 4,
+        "array": true,
+        "name": "_Values",
+        "native": false,
+        "original_type": "ace.user_data.ExcelUserData.cData",
+        "size": 4,
+        "type": "Object"
+      }
+    ],
+    "name": "app.user_data.ArmorData"
+  },
+  "246c95d9": {
+    "crc": "1edbd431",
+    "fields": [
+      {
+        "align": 4,
+        "array": false,
+        "name": "_Index",
+        "native": false,
+        "original_type": "System.Int32",
+        "size": 4,
+        "type": "S32"
+      },
+      {
+        "align": 4,
+        "array": false,
+        "name": "_Rare",
+        "native": false,
+        "original_type": "app.ItemDef.RARE_Serializable",
+        "size": 4,
+        "type": "Object"
+      },
+      {
+        "align": 4,
+        "array": false,
+        "name": "_StoryNo",
+        "native": false,
+        "original_type": "app.MissionIDList.ID_Serializable",
+        "size": 4,
+        "type": "Object"
+      },
+      {
+        "align": 4,
+        "array": false,
+        "name": "_MaxLevel",
+        "native": false,
+        "original_type": "System.UInt32",
+        "size": 4,
+        "type": "U32"
+      },
+      {
+        "align": 4,
+        "array": false,
+        "name": "_DefUpValue",
+        "native": false,
+        "original_type": "System.UInt32",
+        "size": 4,
+        "type": "U32"
+      },
+      {
+        "align": 4,
+        "array": false,
+        "name": "_Point",
+        "native": false,
+        "original_type": "System.UInt32",
+        "size": 4,
+        "type": "U32"
+      },
+      {
+        "align": 4,
+        "array": false,
+        "name": "_Price",
+        "native": false,
+        "original_type": "System.UInt32",
+        "size": 4,
+        "type": "U32"
+      },
+      {
+        "align": 1,
+        "array": false,
+        "name": "_IsSpecialUpgrade",
+        "native": false,
+        "original_type": "System.Boolean",
+        "size": 1,
+        "type": "Bool"
+      }
+    ],
+    "name": "app.user_data.ArmorUpgradeData.cData"
+  },
+  "314f7c06": {
+    "crc": "9f2315f3",
+    "fields": [
+      {
+        "align": 4,
+        "array": false,
+        "name": "_Value",
+        "native": false,
+        "original_type": "System.Int32",
+        "size": 4,
+        "type": "S32"
+      }
+    ],
+    "name": "app.ItemDef.RARE_Serializable"
+  },
+  "339d8bfa": {
+    "crc": "e160779b",
+    "fields": [
+      {
+        "align": 4,
+        "array": false,
+        "name": "_Value",
+        "native": false,
+        "original_type": "System.Int32",
+        "size": 4,
+        "type": "S32"
+      }
+    ],
+    "name": "app.Wp07ShellLevel.SHELL_LV_Serializable"
+  },
+  "339f8997": {
+    "crc": "1df96ffe",
+    "fields": [
+      {
+        "align": 4,
+        "array": false,
+        "name": "_Value",
+        "native": false,
+        "original_type": "System.Int32",
+        "size": 4,
+        "type": "S32"
+      }
+    ],
+    "name": "app.ArmorDef.SERIES_Serializable"
+  },
+  "33ea8d6d": {
+    "crc": "4926cf0a",
+    "fields": [
+      {
+        "align": 4,
+        "array": false,
+        "name": "_Value",
+        "native": false,
+        "original_type": "System.Int32",
+        "size": 4,
+        "type": "S32"
+      }
+    ],
+    "name": "app.Wp05Def.UNIQUE_TYPE_Serializable"
+  },
+  "35d72ed3": {
+    "crc": "8ba703f0",
+    "fields": [
+      {
+        "align": 4,
+        "array": false,
+        "name": "_Index",
+        "native": false,
+        "original_type": "System.Int32",
+        "size": 4,
+        "type": "S32"
+      },
+      {
+        "align": 4,
+        "array": false,
+        "name": "_DataValue",
+        "native": false,
+        "original_type": "System.Int32",
+        "size": 4,
+        "type": "S32"
+      },
+      {
+        "align": 4,
+        "array": false,
+        "name": "_Series",
+        "native": false,
+        "original_type": "app.ArmorDef.SERIES_Serializable",
+        "size": 4,
+        "type": "Object"
+      },
+      {
+        "align": 4,
+        "array": false,
+        "name": "_PartsType",
+        "native": false,
+        "original_type": "app.ArmorDef.ARMOR_PARTS_Serializable",
+        "size": 4,
+        "type": "Object"
+      },
+      {
+        "align": 8,
+        "array": false,
+        "name": "_Name",
+        "native": false,
+        "original_type": "System.Guid",
+        "size": 16,
+        "type": "Guid"
+      },
+      {
+        "align": 8,
+        "array": false,
+        "name": "_Explain",
+        "native": false,
+        "original_type": "System.Guid",
+        "size": 16,
+        "type": "Guid"
+      },
+      {
+        "align": 4,
+        "array": false,
+        "name": "_Defense",
+        "native": false,
+        "original_type": "System.Int32",
+        "size": 4,
+        "type": "S32"
+      },
+      {
+        "align": 4,
+        "array": true,
+        "name": "_Resistance",
+        "native": false,
+        "original_type": "System.Int32",
+        "size": 4,
+        "type": "S32"
+      },
+      {
+        "align": 4,
+        "array": true,
+        "name": "_SlotLevel",
+        "native": false,
+        "original_type": "app.EquipDef.SlotLevel_Serializable",
+        "size": 4,
+        "type": "Object"
+      },
+      {
+        "align": 4,
+        "array": true,
+        "name": "_Skill",
+        "native": false,
+        "original_type": "app.HunterDef.Skill_Serializable",
+        "size": 4,
+        "type": "Object"
+      },
+      {
+        "align": 4,
+        "array": true,
+        "name": "_SkillLevel",
+        "native": false,
+        "original_type": "System.UInt32",
+        "size": 4,
+        "type": "U32"
+      }
+    ],
+    "name": "app.user_data.ArmorData.cData"
+  },
+  "3bc92367": {
+    "crc": "906d245e",
+    "fields": [
+      {
+        "align": 4,
+        "array": false,
+        "name": "_Value",
+        "native": false,
+        "original_type": "System.Int32",
+        "size": 4,
+        "type": "S32"
+      }
+    ],
+    "name": "app.Wp13Def.SPECIAL_AMMO_TYPE_Serializable"
+  },
+  "4031e646": {
+    "crc": "567256d5",
+    "fields": [
+      {
+        "align": 4,
+        "array": false,
+        "name": "_Value",
+        "native": false,
+        "original_type": "System.Int32",
+        "size": 4,
+        "type": "S32"
+      }
+    ],
+    "name": "app.Wp05Def.WP05_MUSIC_SKILL_HIGH_FREQ_TYPE_Serializable"
+  },
+  "40df1fc1": {
+    "crc": "3f1c77d5",
+    "fields": [
+      {
+        "align": 4,
+        "array": false,
+        "name": "_Value",
+        "native": false,
+        "original_type": "System.Int32",
+        "size": 4,
+        "type": "S32"
+      }
+    ],
+    "name": "app.Wp07Def.SHELL_TYPE_Serializable"
+  },
+  "45cb10d": {
+    "crc": "c0a2a87c",
+    "fields": [
+      {
+        "align": 4,
+        "array": false,
+        "name": "_Index",
+        "native": false,
+        "original_type": "System.Int32",
+        "size": 4,
+        "type": "S32"
+      },
+      {
+        "align": 4,
+        "array": false,
+        "name": "_Type",
+        "native": false,
+        "original_type": "app.WeaponDef.TYPE_Fixed",
+        "size": 4,
+        "type": "S32"
+      },
+      {
+        "align": 4,
+        "array": false,
+        "name": "_ModelId",
+        "native": false,
+        "original_type": "System.Int32",
+        "size": 4,
+        "type": "S32"
+      },
+      {
+        "align": 4,
+        "array": false,
+        "name": "_CustomModelId",
+        "native": false,
+        "original_type": "System.Int32",
+        "size": 4,
+        "type": "S32"
+      },
+      {
+        "align": 4,
+        "array": false,
+        "name": "_LongSword",
+        "native": false,
+        "original_type": "app.WeaponDef.LongSwordId_Fixed",
+        "size": 4,
+        "type": "S32"
+      },
+      {
+        "align": 4,
+        "array": false,
+        "name": "_ShortSword",
+        "native": false,
+        "original_type": "app.WeaponDef.ShortSwordId_Fixed",
+        "size": 4,
+        "type": "S32"
+      },
+      {
+        "align": 4,
+        "array": false,
+        "name": "_TwinSword",
+        "native": false,
+        "original_type": "app.WeaponDef.TwinSwordId_Fixed",
+        "size": 4,
+        "type": "S32"
+      },
+      {
+        "align": 4,
+        "array": false,
+        "name": "_Tachi",
+        "native": false,
+        "original_type": "app.WeaponDef.TachiId_Fixed",
+        "size": 4,
+        "type": "S32"
+      },
+      {
+        "align": 4,
+        "array": false,
+        "name": "_Hammer",
+        "native": false,
+        "original_type": "app.WeaponDef.HammerId_Fixed",
+        "size": 4,
+        "type": "S32"
+      },
+      {
+        "align": 4,
+        "array": false,
+        "name": "_Whistle",
+        "native": false,
+        "original_type": "app.WeaponDef.WhistleId_Fixed",
+        "size": 4,
+        "type": "S32"
+      },
+      {
+        "align": 4,
+        "array": false,
+        "name": "_Lance",
+        "native": false,
+        "original_type": "app.WeaponDef.LanceId_Fixed",
+        "size": 4,
+        "type": "S32"
+      },
+      {
+        "align": 4,
+        "array": false,
+        "name": "_GunLance",
+        "native": false,
+        "original_type": "app.WeaponDef.GunLanceId_Fixed",
+        "size": 4,
+        "type": "S32"
+      },
+      {
+        "align": 4,
+        "array": false,
+        "name": "_SlashAxe",
+        "native": false,
+        "original_type": "app.WeaponDef.SlashAxeId_Fixed",
+        "size": 4,
+        "type": "S32"
+      },
+      {
+        "align": 4,
+        "array": false,
+        "name": "_ChargeAxe",
+        "native": false,
+        "original_type": "app.WeaponDef.ChargeAxeId_Fixed",
+        "size": 4,
+        "type": "S32"
+      },
+      {
+        "align": 4,
+        "array": false,
+        "name": "_Rod",
+        "native": false,
+        "original_type": "app.WeaponDef.RodId_Fixed",
+        "size": 4,
+        "type": "S32"
+      },
+      {
+        "align": 4,
+        "array": false,
+        "name": "_Bow",
+        "native": false,
+        "original_type": "app.WeaponDef.BowId_Fixed",
+        "size": 4,
+        "type": "S32"
+      },
+      {
+        "align": 4,
+        "array": false,
+        "name": "_HeavyBowgun",
+        "native": false,
+        "original_type": "app.WeaponDef.HeavyBowgunId_Fixed",
+        "size": 4,
+        "type": "S32"
+      },
+      {
+        "align": 4,
+        "array": false,
+        "name": "_LightBowgun",
+        "native": false,
+        "original_type": "app.WeaponDef.LightBowgunId_Fixed",
+        "size": 4,
+        "type": "S32"
+      },
+      {
+        "align": 8,
+        "array": false,
+        "name": "_Name",
+        "native": false,
+        "original_type": "System.Guid",
+        "size": 16,
+        "type": "Guid"
+      },
+      {
+        "align": 8,
+        "array": false,
+        "name": "_Explain",
+        "native": false,
+        "original_type": "System.Guid",
+        "size": 16,
+        "type": "Guid"
+      },
+      {
+        "align": 2,
+        "array": false,
+        "name": "_SortId",
+        "native": false,
+        "original_type": "System.Int16",
+        "size": 2,
+        "type": "S16"
+      },
+      {
+        "align": 4,
+        "array": false,
+        "name": "_Price",
+        "native": false,
+        "original_type": "System.UInt32",
+        "size": 4,
+        "type": "U32"
+      },
+      {
+        "align": 4,
+        "array": false,
+        "name": "_Rare",
+        "native": false,
+        "original_type": "app.ItemDef.RARE_Serializable",
+        "size": 4,
+        "type": "Object"
+      },
+      {
+        "align": 2,
+        "array": false,
+        "name": "_Attack",
+        "native": false,
+        "original_type": "System.Int16",
+        "size": 2,
+        "type": "S16"
+      },
+      {
+        "align": 2,
+        "array": false,
+        "name": "_Defense",
+        "native": false,
+        "original_type": "System.Int16",
+        "size": 2,
+        "type": "S16"
+      },
+      {
+        "align": 2,
+        "array": false,
+        "name": "_Critical",
+        "native": false,
+        "original_type": "System.Int16",
+        "size": 2,
+        "type": "S16"
+      },
+      {
+        "align": 4,
+        "array": false,
+        "name": "_Attribute",
+        "native": false,
+        "original_type": "app.WeaponDef.ATTR_Serializable",
+        "size": 4,
+        "type": "Object"
+      },
+      {
+        "align": 2,
+        "array": false,
+        "name": "_AttributeValue",
+        "native": false,
+        "original_type": "System.Int16",
+        "size": 2,
+        "type": "S16"
+      },
+      {
+        "align": 4,
+        "array": false,
+        "name": "_SubAttribute",
+        "native": false,
+        "original_type": "app.WeaponDef.ATTR_Serializable",
+        "size": 4,
+        "type": "Object"
+      },
+      {
+        "align": 2,
+        "array": false,
+        "name": "_SubAttributeValue",
+        "native": false,
+        "original_type": "System.Int16",
+        "size": 2,
+        "type": "S16"
+      },
+      {
+        "align": 4,
+        "array": true,
+        "name": "_SlotLevel",
+        "native": false,
+        "original_type": "app.EquipDef.SlotLevel_Serializable",
+        "size": 4,
+        "type": "Object"
+      },
+      {
+        "align": 4,
+        "array": false,
+        "name": "_RodInsectLv",
+        "native": false,
+        "original_type": "app.WeaponDef.ROD_INSECT_LV_Serializable",
+        "size": 4,
+        "type": "Object"
+      },
+      {
+        "align": 4,
+        "array": false,
+        "name": "_Wp08BinType",
+        "native": false,
+        "original_type": "app.Wp08Def.BIN_TYPE_Fixed",
+        "size": 4,
+        "type": "S32"
+      },
+      {
+        "align": 2,
+        "array": false,
+        "name": "_Wp08BinValue",
+        "native": false,
+        "original_type": "System.Int16",
+        "size": 2,
+        "type": "S16"
+      },
+      {
+        "align": 4,
+        "array": false,
+        "name": "_Wp09BinType",
+        "native": false,
+        "original_type": "app.Wp09Def.BIN_TYPE_Fixed",
+        "size": 4,
+        "type": "S32"
+      },
+      {
+        "align": 4,
+        "array": false,
+        "name": "_Wp05UniqueType",
+        "native": false,
+        "original_type": "app.Wp05Def.UNIQUE_TYPE_Serializable",
+        "size": 4,
+        "type": "Object"
+      },
+      {
+        "align": 4,
+        "array": false,
+        "name": "_Wp05MusicSkillHighFreqType",
+        "native": false,
+        "original_type": "app.Wp05Def.WP05_MUSIC_SKILL_HIGH_FREQ_TYPE_Serializable",
+        "size": 4,
+        "type": "Object"
+      },
+      {
+        "align": 4,
+        "array": false,
+        "name": "_Wp05HibikiSkillType",
+        "native": false,
+        "original_type": "app.Wp05Def.WP05_HIBIKI_SKILL_TYPE_Serializable",
+        "size": 4,
+        "type": "Object"
+      },
+      {
+        "align": 4,
+        "array": false,
+        "name": "_MainShell",
+        "native": false,
+        "original_type": "app.MainShellType.TYPE_Serializable",
+        "size": 4,
+        "type": "Object"
+      },
+      {
+        "align": 4,
+        "array": true,
+        "name": "_ShellLv",
+        "native": false,
+        "original_type": "app.BowgunShellLv.SHELL_LV_Fixed",
+        "size": 4,
+        "type": "S32"
+      },
+      {
+        "align": 2,
+        "array": true,
+        "name": "_ShellNum",
+        "native": false,
+        "original_type": "System.Int16",
+        "size": 2,
+        "type": "S16"
+      },
+      {
+        "align": 2,
+        "array": true,
+        "name": "_RapidShellNum",
+        "native": false,
+        "original_type": "System.Int16",
+        "size": 2,
+        "type": "S16"
+      },
+      {
+        "align": 1,
+        "array": true,
+        "name": "_IsRappid",
+        "native": false,
+        "original_type": "System.Boolean",
+        "size": 1,
+        "type": "Bool"
+      },
+      {
+        "align": 4,
+        "array": true,
+        "name": "_CustomizePattern",
+        "native": false,
+        "original_type": "app.CustomizePatternID.ID_Serializable",
+        "size": 4,
+        "type": "Object"
+      },
+      {
+        "align": 4,
+        "array": false,
+        "name": "_Wp13SpecialAmmo",
+        "native": false,
+        "original_type": "app.Wp13Def.SPECIAL_AMMO_TYPE_Serializable",
+        "size": 4,
+        "type": "Object"
+      },
+      {
+        "align": 4,
+        "array": false,
+        "name": "_EnergyEfficiency",
+        "native": false,
+        "original_type": "app.EnergyEfficiencyType.TYPE_Serializable",
+        "size": 4,
+        "type": "Object"
+      },
+      {
+        "align": 4,
+        "array": false,
+        "name": "_AmmoStrength",
+        "native": false,
+        "original_type": "app.AmmoStrengthType.TYPE_Serializable",
+        "size": 4,
+        "type": "Object"
+      },
+      {
+        "align": 4,
+        "array": false,
+        "name": "_EnergyShellTypeNormal",
+        "native": false,
+        "original_type": "app.BowgunEnergyShellType.NORMAL_Serializable",
+        "size": 4,
+        "type": "Object"
+      },
+      {
+        "align": 4,
+        "array": false,
+        "name": "_EnergyShellTypePower",
+        "native": false,
+        "original_type": "app.BowgunEnergyShellType.POWER_Serializable",
+        "size": 4,
+        "type": "Object"
+      },
+      {
+        "align": 4,
+        "array": false,
+        "name": "_EnergyShellTypeWeak",
+        "native": false,
+        "original_type": "app.BowgunEnergyShellType.WEAK_Serializable",
+        "size": 4,
+        "type": "Object"
+      },
+      {
+        "align": 1,
+        "array": false,
+        "name": "_DispSilencer",
+        "native": false,
+        "original_type": "System.Boolean",
+        "size": 1,
+        "type": "Bool"
+      },
+      {
+        "align": 1,
+        "array": false,
+        "name": "_DispBarrel",
+        "native": false,
+        "original_type": "System.Boolean",
+        "size": 1,
+        "type": "Bool"
+      },
+      {
+        "align": 1,
+        "array": true,
+        "name": "_isLoadingBin",
+        "native": false,
+        "original_type": "System.Boolean",
+        "size": 1,
+        "type": "Bool"
+      },
+      {
+        "align": 2,
+        "array": true,
+        "name": "_SharpnessValList",
+        "native": false,
+        "original_type": "System.Int16",
+        "size": 2,
+        "type": "S16"
+      },
+      {
+        "align": 2,
+        "array": true,
+        "name": "_TakumiValList",
+        "native": false,
+        "original_type": "System.Int16",
+        "size": 2,
+        "type": "S16"
+      },
+      {
+        "align": 4,
+        "array": false,
+        "name": "_Wp07ShellType",
+        "native": false,
+        "original_type": "app.Wp07Def.SHELL_TYPE_Serializable",
+        "size": 4,
+        "type": "Object"
+      },
+      {
+        "align": 4,
+        "array": false,
+        "name": "_Wp07ShellLv",
+        "native": false,
+        "original_type": "app.Wp07ShellLevel.SHELL_LV_Serializable",
+        "size": 4,
+        "type": "Object"
+      },
+      {
+        "align": 4,
+        "array": true,
+        "name": "_Skill",
+        "native": false,
+        "original_type": "app.HunterDef.Skill_Serializable",
+        "size": 4,
+        "type": "Object"
+      },
+      {
+        "align": 2,
+        "array": true,
+        "name": "_SkillLevel",
+        "native": false,
+        "original_type": "System.Int16",
+        "size": 2,
+        "type": "S16"
+      }
+    ],
+    "name": "app.user_data.WeaponData.cData"
+  },
+  "5268bd53": {
+    "crc": "839d8786",
+    "fields": [
+      {
+        "align": 4,
+        "array": true,
+        "name": "_Values",
+        "native": false,
+        "original_type": "ace.user_data.ExcelUserData.cData",
+        "size": 4,
+        "type": "Object"
+      }
+    ],
+    "name": "app.user_data.OtArmorData"
+  },
+  "539e9094": {
+    "crc": "46926d11",
+    "fields": [
+      {
+        "align": 4,
+        "array": false,
+        "name": "_Value",
+        "native": false,
+        "original_type": "System.Int32",
+        "size": 4,
+        "type": "S32"
+      }
+    ],
+    "name": "app.HunterDef.Skill_Serializable"
+  },
+  "7b28f25e": {
+    "crc": "c0bb86a8",
+    "fields": [
+      {
+        "align": 4,
+        "array": false,
+        "name": "_Value",
+        "native": false,
+        "original_type": "System.Int32",
+        "size": 4,
+        "type": "S32"
+      }
+    ],
+    "name": "app.MainShellType.TYPE_Serializable"
+  },
+  "98cda10e": {
+    "crc": "c9ab3a92",
+    "fields": [
+      {
+        "align": 4,
+        "array": false,
+        "name": "_Value",
+        "native": false,
+        "original_type": "System.Int32",
+        "size": 4,
+        "type": "S32"
+      }
+    ],
+    "name": "app.BowgunEnergyShellType.POWER_Serializable"
+  },
+  "9b3156b1": {
+    "crc": "60e3b2d3",
+    "fields": [
+      {
+        "align": 4,
+        "array": false,
+        "name": "_Value",
+        "native": false,
+        "original_type": "System.Int32",
+        "size": 4,
+        "type": "S32"
+      }
+    ],
+    "name": "app.WeaponDef.ATTR_Serializable"
+  },
+  "a3a9ecf8": {
+    "crc": "ed7d9dee",
+    "fields": [
+      {
+        "align": 4,
+        "array": false,
+        "name": "_Value",
+        "native": false,
+        "original_type": "System.Int32",
+        "size": 4,
+        "type": "S32"
+      }
+    ],
+    "name": "app.EnergyEfficiencyType.TYPE_Serializable"
+  },
+  "a55da899": {
+    "crc": "b3a64267",
+    "fields": [
+      {
+        "align": 4,
+        "array": true,
+        "name": "_Values",
+        "native": false,
+        "original_type": "ace.user_data.ExcelUserData.cData",
+        "size": 4,
+        "type": "Object"
+      }
+    ],
+    "name": "app.user_data.WeaponData"
+  },
+  "b81f6db0": {
+    "crc": "63035eb0",
+    "fields": [
+      {
+        "align": 4,
+        "array": false,
+        "name": "_Value",
+        "native": false,
+        "original_type": "System.Int32",
+        "size": 4,
+        "type": "S32"
+      }
+    ],
+    "name": "app.MissionIDList.ID_Serializable"
+  },
+  "bd0a3e2b": {
+    "crc": "2bee37e5",
+    "fields": [
+      {
+        "align": 4,
+        "array": false,
+        "name": "_Value",
+        "native": false,
+        "original_type": "System.Int32",
+        "size": 4,
+        "type": "S32"
+      }
+    ],
+    "name": "app.WeaponDef.ROD_INSECT_LV_Serializable"
+  },
+  "bf0749b3": {
+    "crc": "c2a89fc7",
+    "fields": [
+      {
+        "align": 4,
+        "array": false,
+        "name": "_Value",
+        "native": false,
+        "original_type": "System.Int32",
+        "size": 4,
+        "type": "S32"
+      }
+    ],
+    "name": "app.OtEquipDef.EQUIP_TYPE_Serializable"
+  },
+  "cac10626": {
+    "crc": "d784972b",
+    "fields": [
+      {
+        "align": 4,
+        "array": false,
+        "name": "_Value",
+        "native": false,
+        "original_type": "System.Int32",
+        "size": 4,
+        "type": "S32"
+      }
+    ],
+    "name": "app.AmmoStrengthType.TYPE_Serializable"
+  },
+  "cf8644f3": {
+    "crc": "b2d405b0",
+    "fields": [
+      {
+        "align": 4,
+        "array": false,
+        "name": "_Value",
+        "native": false,
+        "original_type": "System.Int32",
+        "size": 4,
+        "type": "S32"
+      }
+    ],
+    "name": "app.OtEquipDef.EQUIP_DATA_ID_Serializable"
+  },
+  "f2ef6d9f": {
+    "crc": "6b073d10",
+    "fields": [
+      {
+        "align": 4,
+        "array": false,
+        "name": "_Index",
+        "native": false,
+        "original_type": "System.Int32",
+        "size": 4,
+        "type": "S32"
+      },
+      {
+        "align": 4,
+        "array": false,
+        "name": "_DataId",
+        "native": false,
+        "original_type": "System.Int32",
+        "size": 4,
+        "type": "S32"
+      },
+      {
+        "align": 4,
+        "array": false,
+        "name": "_Series",
+        "native": false,
+        "original_type": "app.OtEquipDef.EQUIP_DATA_ID_Serializable",
+        "size": 4,
+        "type": "Object"
+      },
+      {
+        "align": 4,
+        "array": false,
+        "name": "_EquipCategory",
+        "native": false,
+        "original_type": "app.OtEquipDef.EQUIP_TYPE_Serializable",
+        "size": 4,
+        "type": "Object"
+      },
+      {
+        "align": 8,
+        "array": false,
+        "name": "_Name",
+        "native": false,
+        "original_type": "System.Guid",
+        "size": 16,
+        "type": "Guid"
+      },
+      {
+        "align": 8,
+        "array": false,
+        "name": "_Explain",
+        "native": false,
+        "original_type": "System.Guid",
+        "size": 16,
+        "type": "Guid"
+      },
+      {
+        "align": 4,
+        "array": false,
+        "name": "_Defense",
+        "native": false,
+        "original_type": "System.Int32",
+        "size": 4,
+        "type": "S32"
+      },
+      {
+        "align": 4,
+        "array": true,
+        "name": "_AttributeResist",
+        "native": false,
+        "original_type": "System.Int32",
+        "size": 4,
+        "type": "S32"
+      }
+    ],
+    "name": "app.user_data.OtArmorData.cData"
+  },
+  "f4dcac2": {
+    "crc": "225b9b56",
+    "fields": [
+      {
+        "align": 4,
+        "array": false,
+        "name": "_Value",
+        "native": false,
+        "original_type": "System.Int32",
+        "size": 4,
+        "type": "S32"
+      }
+    ],
+    "name": "app.Wp05Def.WP05_HIBIKI_SKILL_TYPE_Serializable"
+  },
+  "fc280fe7": {
+    "crc": "beef864f",
+    "fields": [
+      {
+        "align": 4,
+        "array": false,
+        "name": "_Value",
+        "native": false,
+        "original_type": "System.Int32",
+        "size": 4,
+        "type": "S32"
+      }
+    ],
+    "name": "app.BowgunEnergyShellType.WEAK_Serializable"
+  },
+  "fcc02ac1": {
+    "crc": "80b0100b",
+    "fields": [
+      {
+        "align": 4,
+        "array": false,
+        "name": "_Value",
+        "native": false,
+        "original_type": "System.Int32",
+        "size": 4,
+        "type": "S32"
+      }
+    ],
+    "name": "app.BowgunEnergyShellType.NORMAL_Serializable"
+  }
+}

@@ -17,11 +17,16 @@ SCHEMA_PATH = SOURCE_DIR / "type_schema.json"
 DIST_DIR = ROOT / "dist"
 ARCHIVE_NAME = "Easier Hunting - TU4.1.zip"
 MOD_NAME = "Easier Hunting"
-MOD_VERSION = "1.2.0"
-MULTIPLIER = 3
-RESISTANCE_ADDEND = 20
+MOD_VERSION = "1.3.0"
+MULTIPLIER = 2
+RESISTANCE_TOTAL_BONUS = 20
+ARMOR_SLOT_COUNT = 5
+RESISTANCE_PER_PIECE = RESISTANCE_TOTAL_BONUS // ARMOR_SLOT_COUNT
 WEAPON_DATA_HASH = 0x045CB10D
 ZIP_TIMESTAMP = (1980, 1, 1, 0, 0, 0)
+
+if RESISTANCE_TOTAL_BONUS % ARMOR_SLOT_COUNT:
+    raise ValueError("total resistance bonus must divide evenly across armor slots")
 
 
 @dataclass(frozen=True)
@@ -68,19 +73,12 @@ TARGETS = (
         Path("natives/STM/GameDesign/Common/Equip/ArmorData.user.3"),
         (
             FieldSpec(0x35D72ED3, "_Defense"),
-            FieldSpec(0x35D72ED3, "_Resistance", scale_with_multiplier=False, addend=RESISTANCE_ADDEND),
+            FieldSpec(0x35D72ED3, "_Resistance", scale_with_multiplier=False, addend=RESISTANCE_PER_PIECE),
         ),
     ),
     (
         Path("natives/STM/GameDesign/Common/Equip/ArmorUpgradeData.user.3"),
         (FieldSpec(0x246C95D9, "_DefUpValue"),),
-    ),
-    (
-        Path("natives/STM/GameDesign/Otomo/DataParam/OtomoArmorData.user.3"),
-        (
-            FieldSpec(0xF2EF6D9F, "_Defense"),
-            FieldSpec(0xF2EF6D9F, "_AttributeResist", scale_with_multiplier=False, addend=RESISTANCE_ADDEND),
-        ),
     ),
 ) + tuple(
     (Path(f"natives/STM/GameDesign/Common/Weapon/{weapon}.user.3"), WEAPON_FIELDS)
@@ -296,7 +294,7 @@ def build_archive(output: Path, multiplier: int, schema: dict) -> Path:
         (
             f"name={MOD_NAME}",
             f"version={MOD_VERSION}",
-            f"description={MULTIPLIER}x armor and weapon stats, plus {RESISTANCE_ADDEND} to all armor elemental resistances.",
+            f"description={MULTIPLIER}x hunter armor and weapon stats, plus {RESISTANCE_TOTAL_BONUS} total elemental resistance per full armor set.",
             "author=OpenCode",
             "",
         )

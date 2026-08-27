@@ -904,21 +904,6 @@
     ],
     "name": "app.user_data.WeaponData.cData"
   },
-  "5268bd53": {
-    "crc": "839d8786",
-    "fields": [
-      {
-        "align": 4,
-        "array": true,
-        "name": "_Values",
-        "native": false,
-        "original_type": "ace.user_data.ExcelUserData.cData",
-        "size": 4,
-        "type": "Object"
-      }
-    ],
-    "name": "app.user_data.OtArmorData"
-  },
   "539e9094": {
     "crc": "46926d11",
     "fields": [
@@ -1039,21 +1024,6 @@
     ],
     "name": "app.WeaponDef.ROD_INSECT_LV_Serializable"
   },
-  "bf0749b3": {
-    "crc": "c2a89fc7",
-    "fields": [
-      {
-        "align": 4,
-        "array": false,
-        "name": "_Value",
-        "native": false,
-        "original_type": "System.Int32",
-        "size": 4,
-        "type": "S32"
-      }
-    ],
-    "name": "app.OtEquipDef.EQUIP_TYPE_Serializable"
-  },
   "cac10626": {
     "crc": "d784972b",
     "fields": [
@@ -1068,99 +1038,6 @@
       }
     ],
     "name": "app.AmmoStrengthType.TYPE_Serializable"
-  },
-  "cf8644f3": {
-    "crc": "b2d405b0",
-    "fields": [
-      {
-        "align": 4,
-        "array": false,
-        "name": "_Value",
-        "native": false,
-        "original_type": "System.Int32",
-        "size": 4,
-        "type": "S32"
-      }
-    ],
-    "name": "app.OtEquipDef.EQUIP_DATA_ID_Serializable"
-  },
-  "f2ef6d9f": {
-    "crc": "6b073d10",
-    "fields": [
-      {
-        "align": 4,
-        "array": false,
-        "name": "_Index",
-        "native": false,
-        "original_type": "System.Int32",
-        "size": 4,
-        "type": "S32"
-      },
-      {
-        "align": 4,
-        "array": false,
-        "name": "_DataId",
-        "native": false,
-        "original_type": "System.Int32",
-        "size": 4,
-        "type": "S32"
-      },
-      {
-        "align": 4,
-        "array": false,
-        "name": "_Series",
-        "native": false,
-        "original_type": "app.OtEquipDef.EQUIP_DATA_ID_Serializable",
-        "size": 4,
-        "type": "Object"
-      },
-      {
-        "align": 4,
-        "array": false,
-        "name": "_EquipCategory",
-        "native": false,
-        "original_type": "app.OtEquipDef.EQUIP_TYPE_Serializable",
-        "size": 4,
-        "type": "Object"
-      },
-      {
-        "align": 8,
-        "array": false,
-        "name": "_Name",
-        "native": false,
-        "original_type": "System.Guid",
-        "size": 16,
-        "type": "Guid"
-      },
-      {
-        "align": 8,
-        "array": false,
-        "name": "_Explain",
-        "native": false,
-        "original_type": "System.Guid",
-        "size": 16,
-        "type": "Guid"
-      },
-      {
-        "align": 4,
-        "array": false,
-        "name": "_Defense",
-        "native": false,
-        "original_type": "System.Int32",
-        "size": 4,
-        "type": "S32"
-      },
-      {
-        "align": 4,
-        "array": true,
-        "name": "_AttributeResist",
-        "native": false,
-        "original_type": "System.Int32",
-        "size": 4,
-        "type": "S32"
-      }
-    ],
-    "name": "app.user_data.OtArmorData.cData"
   },
   "f4dcac2": {
     "crc": "225b9b56",

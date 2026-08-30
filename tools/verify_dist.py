@@ -1,7 +1,8 @@
-"""Verify the Easier Hunting archive against clean archived source data."""
+"""Verify the Easier Hunting archive."""
 
 from __future__ import annotations
 
+import hashlib
 import json
 import zipfile
 from pathlib import Path
@@ -14,7 +15,11 @@ SOURCE_DIR = ROOT / "source"
 ARCHIVE_PATH = ROOT / "dist" / build_mod.ARCHIVE_NAME
 
 
-def field_values(payload: bytes, specs: tuple[build_mod.FieldSpec, ...], schema: dict) -> dict[build_mod.FieldSpec, list[int]]:
+def sha256(path: Path) -> str:
+    return hashlib.sha256(path.read_bytes()).hexdigest().upper()
+
+
+def field_values(payload: bytes, specs: tuple[build_mod.FieldSpec, ...], schema: dict):
     data = bytearray(payload)
     data_start, records = build_mod.read_rsz(data)
     instances, stream_end = build_mod.walk_instances(data, records, data_start, schema)
@@ -40,7 +45,7 @@ def expected_value(value: int, spec: build_mod.FieldSpec) -> int:
 
 def main() -> None:
     schema = json.loads((SOURCE_DIR / "type_schema.json").read_text(encoding="utf-8"))
-    expected_members = {"modinfo.ini"} | {
+    expected_members = {"modinfo.ini", build_mod.RETRY_SCRIPT_ARCHIVE_PATH} | {
         relative_path.as_posix() for relative_path, _specs in build_mod.TARGETS
     }
     with zipfile.ZipFile(ARCHIVE_PATH) as archive:
@@ -49,17 +54,30 @@ def main() -> None:
             raise ValueError(f"unexpected archive members: {sorted(members)}")
         if any(entry.is_dir() for entry in archive.infolist()):
             raise ValueError("archive contains directory entries")
-        manifest = archive.read("modinfo.ini").decode("ascii")
-        if f"name={build_mod.MOD_NAME}" not in manifest:
-            raise ValueError("archive manifest has the wrong mod name")
+        if archive.read(build_mod.RETRY_SCRIPT_ARCHIVE_PATH) != build_mod.RETRY_SCRIPT_PATH.read_bytes():
+            raise ValueError("retry script mismatch")
         for relative_path, specs in build_mod.TARGETS:
             source_values = field_values((SOURCE_DIR / relative_path).read_bytes(), specs, schema)
             archive_values = field_values(archive.read(relative_path.as_posix()), specs, schema)
             for spec in specs:
-                expected_values = [expected_value(value, spec) for value in source_values[spec]]
-                if archive_values[spec] != expected_values:
+                expected = [expected_value(value, spec) for value in source_values[spec]]
+                if archive_values[spec] != expected:
                     raise ValueError(f"stat verification failed: {relative_path} {spec.name}")
-    print(f"verified {ARCHIVE_PATH.name}: {len(expected_members) - 1} game data files")
+
+    expected_sums = {}
+    for relative_path, _ in build_mod.TARGETS:
+        path = SOURCE_DIR / relative_path
+        expected_sums[path.relative_to(ROOT).as_posix()] = sha256(path)
+    expected_sums[build_mod.RETRY_SCRIPT_PATH.relative_to(ROOT).as_posix()] = sha256(build_mod.RETRY_SCRIPT_PATH)
+    expected_sums[ARCHIVE_PATH.relative_to(ROOT).as_posix()] = sha256(ARCHIVE_PATH)
+    actual_sums = {}
+    for line in (ROOT / "SHA256SUMS.txt").read_text(encoding="ascii").splitlines():
+        digest, relative_path = line.split("  ", maxsplit=1)
+        actual_sums[relative_path] = digest
+    if actual_sums != expected_sums:
+        raise ValueError("SHA256SUMS.txt does not match current files")
+
+    print(f"verified {ARCHIVE_PATH.name}: {len(expected_members)} entries")
 
 
 if __name__ == "__main__":

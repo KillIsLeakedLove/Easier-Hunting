@@ -1,8 +1,9 @@
-"""Build the deterministic Easier Hunting FMM archive from clean RSZ data."""
+"""Build the Easier Hunting FMM archive from clean RSZ data."""
 
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import struct
 import zipfile
@@ -14,19 +15,16 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 SOURCE_DIR = ROOT / "source"
 SCHEMA_PATH = SOURCE_DIR / "type_schema.json"
+RETRY_SCRIPT_PATH = SOURCE_DIR / "reframework" / "easier_hunting_retries.lua"
 DIST_DIR = ROOT / "dist"
 ARCHIVE_NAME = "Easier Hunting - TU4.1.zip"
 MOD_NAME = "Easier Hunting"
-MOD_VERSION = "1.3.0"
+MOD_VERSION = "1.5.0"
 MULTIPLIER = 2
-RESISTANCE_TOTAL_BONUS = 20
-ARMOR_SLOT_COUNT = 5
-RESISTANCE_PER_PIECE = RESISTANCE_TOTAL_BONUS // ARMOR_SLOT_COUNT
+RESISTANCE_PER_PIECE = 2
 WEAPON_DATA_HASH = 0x045CB10D
 ZIP_TIMESTAMP = (1980, 1, 1, 0, 0, 0)
-
-if RESISTANCE_TOTAL_BONUS % ARMOR_SLOT_COUNT:
-    raise ValueError("total resistance bonus must divide evenly across armor slots")
+RETRY_SCRIPT_ARCHIVE_PATH = "reframework/autorun/easier_hunting_retries.lua"
 
 
 @dataclass(frozen=True)
@@ -36,13 +34,6 @@ class FieldSpec:
     scale_with_multiplier: bool = True
     addend: int = 0
     positive_only: bool = True
-
-
-@dataclass(frozen=True)
-class MutationStats:
-    records: int
-    changed: int
-    maximum: int
 
 
 WEAPON_FILES = (
@@ -162,7 +153,7 @@ def read_rsz(data: bytearray) -> tuple[int, list[tuple[int, int]]]:
     return data_start, records
 
 
-def walk_instances(data: bytearray, records: list[tuple[int, int]], data_start: int, schema: dict) -> tuple[list[tuple[int, dict[str, int | tuple[int, int]]]], int]:
+def walk_instances(data: bytearray, records: list[tuple[int, int]], data_start: int, schema: dict):
     instances = []
     offset = data_start
     for index, (type_hash, _crc) in enumerate(records):
@@ -181,24 +172,18 @@ def walk_instances(data: bytearray, records: list[tuple[int, int]], data_start: 
 
 
 def integer_value(data: bytearray, offset: int, field_type: str) -> int:
-    try:
-        fmt, _minimum, _maximum = INTEGER_LAYOUTS[field_type]
-    except KeyError as error:
-        raise ValueError(f"unsupported target field type: {field_type}") from error
+    fmt, _minimum, _maximum = INTEGER_LAYOUTS[field_type]
     return struct.unpack_from(fmt, data, offset)[0]
 
 
 def write_integer(data: bytearray, offset: int, field_type: str, value: int) -> None:
-    try:
-        fmt, minimum, maximum = INTEGER_LAYOUTS[field_type]
-    except KeyError as error:
-        raise ValueError(f"unsupported target field type: {field_type}") from error
+    fmt, minimum, maximum = INTEGER_LAYOUTS[field_type]
     if not minimum <= value <= maximum:
         raise ValueError(f"{field_type} overflow: {value}")
     struct.pack_into(fmt, data, offset, value)
 
 
-def resolve_fields(specs: tuple[FieldSpec, ...], schema: dict) -> tuple[dict[FieldSpec, dict], dict[int, tuple[FieldSpec, ...]]]:
+def resolve_fields(specs: tuple[FieldSpec, ...], schema: dict):
     definitions: dict[FieldSpec, dict] = {}
     grouped: dict[int, list[FieldSpec]] = defaultdict(list)
     for spec in specs:
@@ -214,7 +199,6 @@ def resolve_fields(specs: tuple[FieldSpec, ...], schema: dict) -> tuple[dict[Fie
 def value_offsets(data: bytearray, location: int | tuple[int, int], field: dict) -> tuple[int, ...]:
     if isinstance(location, int):
         return (location,)
-
     array_offset, count = location
     offset = array_offset + 4
     offsets = []
@@ -225,13 +209,13 @@ def value_offsets(data: bytearray, location: int | tuple[int, int], field: dict)
     return tuple(offsets)
 
 
-def transformed_value(value: int, spec: FieldSpec, multiplier: int) -> int:
+def transformed_value(value: int, spec: FieldSpec) -> int:
     if spec.scale_with_multiplier and (value > 0 or not spec.positive_only):
-        value *= multiplier
+        value *= MULTIPLIER
     return value + spec.addend
 
 
-def transform(source: Path, specs: tuple[FieldSpec, ...], multiplier: int, schema: dict) -> tuple[bytes, dict[str, MutationStats]]:
+def transform(source: Path, specs: tuple[FieldSpec, ...], schema: dict) -> bytes:
     data = bytearray(source.read_bytes())
     data_start, records = read_rsz(data)
     instances, stream_end = walk_instances(data, records, data_start, schema)
@@ -240,21 +224,15 @@ def transform(source: Path, specs: tuple[FieldSpec, ...], multiplier: int, schem
 
     definitions, specs_by_type = resolve_fields(specs, schema)
     expected = {spec: [] for spec in specs}
-    stats = {spec: [0, 0, 0] for spec in specs}
 
     for type_hash, fields in instances:
         for spec in specs_by_type.get(type_hash, ()):
             field = definitions[spec]
             for field_offset in value_offsets(data, fields[spec.name], field):
                 original = integer_value(data, field_offset, field["type"])
-                replacement = transformed_value(original, spec, multiplier)
+                replacement = transformed_value(original, spec)
                 write_integer(data, field_offset, field["type"], replacement)
                 expected[spec].append(replacement)
-                stat = stats[spec]
-                stat[0] += 1
-                if replacement != original:
-                    stat[1] += 1
-                stat[2] = max(stat[2], replacement)
 
     if any(not values for values in expected.values()):
         missing = [spec.name for spec, values in expected.items() if not values]
@@ -275,10 +253,7 @@ def transform(source: Path, specs: tuple[FieldSpec, ...], multiplier: int, schem
     if actual != expected:
         raise ValueError(f"post-edit value verification failed for {source.name}")
 
-    return bytes(data), {
-        spec.name: MutationStats(*values)
-        for spec, values in stats.items()
-    }
+    return bytes(data)
 
 
 def zip_entry(archive: zipfile.ZipFile, name: str, payload: bytes) -> None:
@@ -288,39 +263,46 @@ def zip_entry(archive: zipfile.ZipFile, name: str, payload: bytes) -> None:
     archive.writestr(info, payload, compress_type=zipfile.ZIP_DEFLATED, compresslevel=9)
 
 
-def build_archive(output: Path, multiplier: int, schema: dict) -> Path:
+def sha256(path: Path) -> str:
+    return hashlib.sha256(path.read_bytes()).hexdigest().upper()
+
+
+def build_archive(output: Path, schema: dict) -> Path:
     output.parent.mkdir(parents=True, exist_ok=True)
     manifest = "\n".join(
         (
             f"name={MOD_NAME}",
             f"version={MOD_VERSION}",
-            f"description={MULTIPLIER}x hunter armor and weapon stats, plus {RESISTANCE_TOTAL_BONUS} total elemental resistance per full armor set.",
+            f"description={MULTIPLIER}x hunter attack/defense, +{RESISTANCE_PER_PIECE} resistance per armor piece, 99 quest retries.",
             "author=OpenCode",
+            "category=Gameplay",
             "",
         )
     ).encode("ascii")
     with zipfile.ZipFile(output, "w", compression=zipfile.ZIP_DEFLATED, compresslevel=9) as archive:
         zip_entry(archive, "modinfo.ini", manifest)
         for relative_path, specs in TARGETS:
-            payload, stats = transform(SOURCE_DIR / relative_path, specs, multiplier, schema)
-            zip_entry(archive, relative_path.as_posix(), payload)
-            summary = ", ".join(
-                f"{name}: {stat.records} records, {stat.changed} changed, max {stat.maximum}"
-                for name, stat in stats.items()
-            )
-            print(f"{relative_path.name}: {summary}")
+            zip_entry(archive, relative_path.as_posix(), transform(SOURCE_DIR / relative_path, specs, schema))
+        zip_entry(archive, RETRY_SCRIPT_ARCHIVE_PATH, RETRY_SCRIPT_PATH.read_bytes())
     return output
+
+
+def write_checksums(archive: Path) -> None:
+    paths = [SOURCE_DIR / relative_path for relative_path, _ in TARGETS]
+    paths.append(RETRY_SCRIPT_PATH)
+    paths.append(archive)
+    lines = [f"{sha256(path)}  {path.relative_to(ROOT).as_posix()}" for path in paths]
+    (ROOT / "SHA256SUMS.txt").write_text("\n".join(lines) + "\n", encoding="ascii")
 
 
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--output", type=Path, default=DIST_DIR / ARCHIVE_NAME)
-    parser.add_argument("--multiplier", type=int, default=MULTIPLIER)
     args = parser.parse_args()
-    if args.multiplier != MULTIPLIER:
-        parser.error(f"{MOD_NAME} is defined as {MULTIPLIER}x")
     schema = json.loads(SCHEMA_PATH.read_text(encoding="utf-8"))
-    print(build_archive(args.output, args.multiplier, schema))
+    archive = build_archive(args.output, schema)
+    write_checksums(archive)
+    print(archive)
 
 
 if __name__ == "__main__":

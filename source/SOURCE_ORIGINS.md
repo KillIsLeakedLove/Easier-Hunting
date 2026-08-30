@@ -31,3 +31,8 @@ The latest official patch containing each file was archived.
 - SlashAxe
 - TwinSword
 - Whistle
+
+## Runtime retry script
+
+- `reframework/easier_hunting_retries.lua`: raises the in-quest retry cap to 99.
+  Not extracted game data. Requires REFramework.

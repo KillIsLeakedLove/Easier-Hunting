@@ -2,202 +2,30 @@
 
 **Language / 语言:** [English](README.md) | [简体中文](README.zh-CN.md)
 
-`Easier Hunting` is a Monster Hunter Wilds TU4.1 stat mod for offline or
-private play. It multiplies selected **hunter** equipment stats by **2x** and
-adds a total of **20** to each elemental resistance across a complete
-five-piece hunter armor set.
+Monster Hunter Wilds TU4.1 FMM pack for offline / solo / private play. Fixed values:
 
-## Effects
-
-### Hunter Armor
-
-| Modified data | Result |
+| Feature | Effect |
 | --- | --- |
-| Base defense | 2x |
-| Fire, water, thunder, ice, and dragon resistance | +20 per complete five-piece set |
-| Defense gained per armor upgrade level | 2x |
+| Hunter weapon attack | 2x (raw + innate element) |
+| Hunter armor defense | 2x (base + upgrades) |
+| Elemental resistance | +2 per armor piece per element (~+10 full set) |
+| Quest retries | Cap 99 (requires REFramework) |
 
-The resistance bonus is written as `+4` to each armor piece, because the game
-adds the five equipped armor pieces together. This produces the intended `+20`
-total for a complete set and works correctly with negative, zero, and positive
-resistances. For example, a complete-set resistance of `-20` becomes `0`, `0`
-becomes `20`, and `15` becomes `35`.
+Otomo gear is unchanged. Zeros and negative sentinels are left alone.
 
-### Hunter Weapons
+## Install
 
-All 14 hunter weapon data files are included. For every weapon record, these
-positive values are multiplied by 2:
+1. Disable old Easier Hunting and any separate retry mod in FMM.
+2. Copy [`dist/Easier Hunting - TU4.1.zip`](dist/Easier%20Hunting%20-%20TU4.1.zip) into FMM's Wilds `Mods` folder.
+3. Refresh, enable, restart the game.
 
-| Field | In-game meaning |
-| --- | --- |
-| `_Attack` | Raw / displayed white attack |
-| `_AttributeValue` | Primary innate elemental attack |
-| `_SubAttributeValue` | Secondary innate elemental attack |
+Only use retries offline / solo / in private sessions.
 
-Zero values and sentinel values are preserved. Bowgun elemental ammunition is
-not an innate weapon attribute and is intentionally not modified. Otomo
-equipment, including Otomo weapons and armor, is unchanged.
-
-Included weapon classes:
-
-- Bow
-- Charge Axe
-- Gunlance
-- Hammer
-- Heavy Bowgun
-- Lance
-- Light Bowgun
-- Long Sword
-- Insect Glaive
-- Sword and Shield
-- Switch Axe
-- Great Sword
-- Dual Blades
-- Hunting Horn
-
-Internal file names use Capcom naming such as `Rod`, `ShortSword`, and `Tachi`.
-
-## Requirements
-
-- Monster Hunter Wilds TU4.1 data set used for this archive.
-- Fluffy Mod Manager.
-- A game restart after changing the mod state in FMM.
-
-The archive contains ordinary `natives/STM/...` files. It does not need a
-custom PAK builder, a runtime Lua stat hook, or an extra plugin.
-
-## Installation With FMM
-
-Use the archive at [`dist/Easier Hunting - TU4.1.zip`](dist/Easier%20Hunting%20-%20TU4.1.zip).
-Copy it into your FMM game's `Mods` directory, then enable it from FMM.
-
-Before enabling Easier Hunting:
-
-1. Disable any older armor-defense or weapon-stat mod, including
-   `2x Armor Defense - Final TU4.1 Flat`.
-2. Refresh the FMM mod list.
-3. Enable `Easier Hunting`.
-4. Confirm FMM reports successful copying with no file-copy errors.
-5. Start the game through FMM and load the save again.
-
-Do not enable Easier Hunting together with another mod that replaces any of the
-same armor or weapon data files. The last-installed file wins and can make the
-visible stats inconsistent with the intended values.
-
-## Manual Test Checklist
-
-After loading a save, verify at least one armor piece and one hunter weapon:
-
-1. Open hunter armor details and compare its defense to the normal value.
-2. Check the same armor after applying upgrade levels.
-3. Open a hunter weapon's details and verify raw attack is 2x.
-4. Check the complete armor-set elemental resistance and verify the total
-   increase is +20, including when the original value was negative.
-5. For a weapon with an innate element, verify its displayed element value is
-   2x.
-6. For a weapon without an innate element, verify the element remains zero.
-7. Verify that Otomo equipment remains unchanged.
-
-## Repository Layout
-
-```text
-easier-hunting/
-  dist/                 Generated FMM archive
-  source/               Clean archived TU4.1 game data snapshot
-  source/SOURCE_ORIGINS.md
-                        Official patch provenance for every source file
-  source/type_schema.json
-                        Minimal RSZ type schema needed by the builder
-  tools/build_mod.py    Deterministic archive builder
-  tools/extract_schema.py
-                        Schema reducer for future game updates
-  tools/verify_dist.py  Byte-for-byte stat and archive verifier
-  SHA256SUMS.txt        Hashes for source files and generated archive
-```
-
-The source directory contains 16 original game data files:
-
-- 2 hunter armor and armor-upgrade files
-- 14 hunter weapon files
-
-No Otomo data file is included in the mod source or generated archive.
-
-## Build From Source
-
-The builder uses only the Python standard library. Python 3.10 or newer is
-recommended. Run it with the `python` command available in your environment:
-
-```powershell
-python tools\build_mod.py
-```
-
-If your system uses the Python launcher:
+## Build
 
 ```powershell
 py -3 tools\build_mod.py
+py -3 tools\verify_dist.py
 ```
-
-By default it writes a deterministic archive to:
-
-```text
-dist/Easier Hunting - TU4.1.zip
-```
-
-To write elsewhere without modifying `dist/`:
-
-```powershell
-python tools\build_mod.py --output "path\to\Easier Hunting - TU4.1.zip"
-```
-
-## Validate A Build
-
-```powershell
-python tools\verify_dist.py
-```
-
-Validation checks all of the following:
-
-- The archive contains exactly `modinfo.ini` plus 16 game data files.
-- The ZIP has no directory entries, avoiding FMM directory-copy errors.
-- Every RSZ instance stream reaches EOF before and after transformation.
-- Every archive payload matches a fresh 2x and +4-per-piece resistance rebuild
-  from `source/`.
-- Positive attack and defense values are multiplied while zero and negative
-  sentinel values are preserved.
-- Hunter armor resistance arrays are adjusted element-by-element by +4,
-  producing +20 over five equipped armor pieces.
-- No Otomo data file is present in the generated archive.
-
-## Updating For A Future Game Patch
-
-Game updates may replace armor or weapon data. Do not rebuild from this source
-snapshot after a data-changing update without refreshing the source files.
-
-1. Extract the newest version of each data file listed in
-   `source/SOURCE_ORIGINS.md` from the installed official patch set.
-2. Replace the corresponding file under `source/natives/`.
-3. Obtain a current full `rszmhwilds.json` schema dump.
-4. Regenerate the compact schema:
-
-   ```powershell
-   python tools\extract_schema.py `
-     --type-db "path\to\rszmhwilds.json" `
-     --source source `
-     --output source\type_schema.json
-   ```
-
-5. Run `python tools\build_mod.py` and `python tools\verify_dist.py`.
-6. Update `SHA256SUMS.txt` after confirming the new source and archive.
-
-## Compatibility And Safety
-
-This mod intentionally changes combat-relevant hunter stats. Use it for
-offline, solo, or private sessions where all participants agree on the change.
-Do not assume it is safe for public multiplayer or progression-sensitive
-content.
-
-The builder and verifier operate only on archived source files. They do not
-launch FMM, start the game, edit save data, or modify the installed game
-directory.
 
 [简体中文](README.zh-CN.md)

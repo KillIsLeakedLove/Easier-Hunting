@@ -1,7 +1,9 @@
 ---@diagnostic disable: undefined-global
 
--- Raises only a verified retry-cap member. It does not modify used retries,
--- retry tickets, rewards, quest results, failure records, timers, or saves.
+-- Goal: quest faint/cart cap = 99 (UI + wipe check + faint message).
+-- Runtime cap field: app.cQuestFlowParam.PlDieCountMax (Mandrake @ 0xB8).
+-- UI field: QuestData._QuestLife.
+-- Do not touch QuestPlDieCount.
 
 local sdk = sdk
 local re = re
@@ -9,57 +11,27 @@ local imgui = imgui
 local reframework = reframework
 local log = log
 
-local MOD_NAME = "Easier Hunting: Infinite Quest Retries"
-local TARGET_RETRY_CAP = 99
-local SCAN_INTERVAL_FRAMES = 60
-local RETRY_TYPE_FRAGMENT = "QuestRetryQuestData"
-
-local MAX_RETRY_FIELD_NAMES = {
-    "MaxRetryCnt",
-    "_MaxRetryCnt",
-    "<MaxRetryCnt>k__BackingField",
-}
-
-local RETRY_ACCESSOR_NAMES = {
-    "get_QuestRetryQuestData",
-    "get_QuestRetryData",
-    "get_RetryQuestData",
-    "get_RetryData",
-    "get_QuestRetry",
-    "get_Retry",
-}
-
-local RETRY_FIELD_NAMES = {
-    "QuestRetryQuestData",
-    "_QuestRetryQuestData",
-    "<QuestRetryQuestData>k__BackingField",
-    "QuestRetryData",
-    "_QuestRetryData",
-    "<QuestRetryData>k__BackingField",
-    "Retry",
-    "_Retry",
-}
-
-local INTEGER_TYPE_NAMES = {
-    ["System.SByte"] = true,
-    ["System.Byte"] = true,
-    ["System.Int16"] = true,
-    ["System.UInt16"] = true,
-    ["System.Int32"] = true,
-    ["System.UInt32"] = true,
-    ["System.Int64"] = true,
-    ["System.UInt64"] = true,
-}
+local MOD_NAME = "Easier Hunting: Quest Life"
+local TARGET = 99
+local SCAN_INTERVAL = 20
+local PL_DIE_COUNT_MAX_OFF = 0xB8
 
 local state = {
-    frame_count = 0,
-    status = "Starting.",
+    frame = 0,
+    status = "Waiting for quest.",
     detail = "",
-    last_path = "",
-    last_member = "",
-    last_value = nil,
     writes = 0,
+    ui_life = nil,
+    max_deaths = nil,
+    deaths = nil,
+    last_path = "",
 }
+
+local function info(msg)
+    if log ~= nil and log.info ~= nil then
+        log.info("[Easier Hunting] " .. msg)
+    end
+end
 
 local function set_status(status, detail)
     detail = detail or ""
@@ -68,292 +40,241 @@ local function set_status(status, detail)
     end
     state.status = status
     state.detail = detail
-    if log ~= nil and log.info ~= nil then
-        log.info("[Easier Hunting] " .. status .. (detail ~= "" and " " .. detail or ""))
-    end
+    info(status .. (detail ~= "" and (" " .. detail) or ""))
 end
 
-local function type_name(object)
-    local ok, result = pcall(function()
-        local type_definition = object:get_type_definition()
-        return type_definition ~= nil and type_definition:get_full_name() or nil
+local function try_get_field(object, name)
+    local ok, value = pcall(function()
+        return object:get_field(name)
     end)
-    return ok and result or nil
+    return ok and value or nil
 end
 
-local function integer_field(type_definition)
-    for _, field_name in ipairs(MAX_RETRY_FIELD_NAMES) do
-        local field = type_definition:get_field(field_name)
-        if field ~= nil and not field:is_static() then
-            local field_type = field:get_type()
-            local field_type_name = field_type ~= nil and field_type:get_full_name() or nil
-            if field_type_name ~= nil and INTEGER_TYPE_NAMES[field_type_name] then
-                return field, field_name, field_type_name
+local function try_set_field(object, name, value)
+    return pcall(function()
+        object:set_field(name, value)
+    end)
+end
+
+local function try_call(object, method_name, ...)
+    local args = { ... }
+    local ok, value = pcall(function()
+        return object:call(method_name, table.unpack(args))
+    end)
+    return ok and value or nil
+end
+
+local function read_qword(object, offset)
+    local ok, value = pcall(function()
+        return object:read_qword(offset)
+    end)
+    if ok and type(value) == "number" then
+        return value
+    end
+    return nil
+end
+
+local function write_qword(object, offset, value)
+    return pcall(function()
+        object:write_qword(offset, value)
+    end)
+end
+
+local function decode_mandrake(enc)
+    if enc == nil then
+        return nil
+    end
+    if type(enc) == "number" then
+        return enc
+    end
+    local value = try_get_field(enc, "_Value")
+        or try_get_field(enc, "Value")
+        or try_get_field(enc, "<Value>k__BackingField")
+    local divisor = try_get_field(enc, "_Divisor")
+        or try_get_field(enc, "Divisor")
+        or try_get_field(enc, "<Divisor>k__BackingField")
+    if type(value) == "number" and type(divisor) == "number" and divisor ~= 0 then
+        return math.floor(value / divisor)
+    end
+    return nil
+end
+
+local function write_mandrake(enc, target)
+    if enc == nil or type(enc) == "number" then
+        return false
+    end
+    local divisor = try_get_field(enc, "_Divisor")
+        or try_get_field(enc, "Divisor")
+        or try_get_field(enc, "<Divisor>k__BackingField")
+    if type(divisor) ~= "number" or divisor == 0 then
+        divisor = 1
+    end
+    local packed = target * divisor
+    if try_set_field(enc, "_Value", packed)
+        or try_set_field(enc, "Value", packed)
+        or try_set_field(enc, "<Value>k__BackingField", packed)
+    then
+        return decode_mandrake(enc) == target
+    end
+    return false
+end
+
+local function decode_at(object, offset)
+    local value = read_qword(object, offset)
+    local divisor = read_qword(object, offset + 8)
+    if value == nil or divisor == nil or divisor == 0 then
+        return nil, nil
+    end
+    return math.floor(value / divisor), divisor
+end
+
+local function get_quest_director()
+    local mission = sdk.get_managed_singleton("app.MissionManager")
+    if mission == nil then
+        return nil
+    end
+    return try_get_field(mission, "QuestDirector")
+        or try_get_field(mission, "_QuestDirector")
+        or try_call(mission, "get_QuestDirector")
+end
+
+local function get_live_quest_data(qd)
+    local active = try_get_field(qd, "_QuestData")
+    if active == nil then
+        return nil
+    end
+    return try_get_field(active, "_QuestData") or active
+end
+
+local function quest_is_live(qd)
+    local data = get_live_quest_data(qd)
+    if data == nil then
+        return false
+    end
+    local life = try_get_field(data, "_QuestLife") or try_get_field(data, "QuestLife")
+    return type(life) == "number" and life >= 1 and life <= 30
+end
+
+local function raise_ui_quest_life(qd)
+    local data = get_live_quest_data(qd)
+    if data == nil then
+        return false
+    end
+    local value = try_get_field(data, "_QuestLife") or try_get_field(data, "QuestLife")
+    if value == TARGET then
+        state.ui_life = TARGET
+        return true
+    end
+    if type(value) ~= "number" or value < 1 or value > 30 then
+        return false
+    end
+    if not (try_set_field(data, "_QuestLife", TARGET) or try_set_field(data, "QuestLife", TARGET)) then
+        return false
+    end
+    local after = try_get_field(data, "_QuestLife") or try_get_field(data, "QuestLife")
+    if after ~= TARGET then
+        return false
+    end
+    state.writes = state.writes + 1
+    state.ui_life = TARGET
+    state.last_path = "QuestDirector._QuestData._QuestData._QuestLife"
+    set_status("QuestLife set to 99.", state.last_path)
+    return true
+end
+
+local function raise_pl_die_count_max(qd)
+    local param = try_get_field(qd, "<Param>k__BackingField")
+        or try_get_field(qd, "Param")
+        or try_call(qd, "get_Param")
+    if param == nil then
+        return false
+    end
+
+    -- 1) Managed Mandrake field
+    for _, name in ipairs({ "PlDieCountMax", "_PlDieCountMax", "<PlDieCountMax>k__BackingField" }) do
+        local enc = try_get_field(param, name)
+        if enc ~= nil then
+            local current = decode_mandrake(enc)
+            if current == TARGET then
+                state.max_deaths = TARGET
+                state.last_path = "Param." .. name
+                return true
             end
-        end
-    end
-    return nil, nil, nil
-end
-
-local function integer_property(type_definition)
-    local getter = type_definition:get_method("get_MaxRetryCnt")
-    local setter = type_definition:get_method("set_MaxRetryCnt")
-    if getter == nil or setter == nil
-        or getter:is_static() or setter:is_static()
-        or getter:get_num_params() ~= 0 or setter:get_num_params() ~= 1 then
-        return nil, nil, nil
-    end
-
-    local return_type = getter:get_return_type()
-    local return_type_name = return_type ~= nil and return_type:get_full_name() or nil
-    local parameter_types = setter:get_param_types()
-    local parameter_type = parameter_types ~= nil and (parameter_types[1] or parameter_types[0]) or nil
-    local parameter_type_name = parameter_type ~= nil and parameter_type:get_full_name() or nil
-    if return_type_name == nil or return_type_name ~= parameter_type_name
-        or not INTEGER_TYPE_NAMES[return_type_name] then
-        return nil, nil, nil
-    end
-    return getter, setter, return_type_name
-end
-
-local function has_retry_cap_member(object)
-    local ok, result = pcall(function()
-        local type_definition = object:get_type_definition()
-        if type_definition == nil then
-            return false
-        end
-        local field = integer_field(type_definition)
-        if field ~= nil then
-            return true
-        end
-        local getter = integer_property(type_definition)
-        return getter ~= nil
-    end)
-    return ok and result == true
-end
-
-local function is_retry_data(object)
-    local current_type_name = type_name(object)
-    return (current_type_name ~= nil and current_type_name:find(RETRY_TYPE_FRAGMENT, 1, true) ~= nil)
-        or has_retry_cap_member(object)
-end
-
-local function call_zero_arg_getter(object, method_name)
-    local ok, result = pcall(function()
-        local type_definition = object:get_type_definition()
-        local method = type_definition:get_method(method_name)
-        if method == nil or method:is_static() or method:get_num_params() ~= 0 then
-            return nil
-        end
-        return method:call(object)
-    end)
-    return ok and result or nil
-end
-
-local function get_instance_field(object, field_name)
-    local ok, result = pcall(function()
-        local type_definition = object:get_type_definition()
-        local field = type_definition:get_field(field_name)
-        if field == nil or field:is_static() then
-            return nil
-        end
-        return field:get_data(object)
-    end)
-    return ok and result or nil
-end
-
-local function find_retry_data_in_members(root)
-    if is_retry_data(root) then
-        return root, "root"
-    end
-
-    for _, method_name in ipairs(RETRY_ACCESSOR_NAMES) do
-        local candidate = call_zero_arg_getter(root, method_name)
-        if is_retry_data(candidate) then
-            return candidate, method_name .. "()"
-        end
-    end
-
-    for _, field_name in ipairs(RETRY_FIELD_NAMES) do
-        local candidate = get_instance_field(root, field_name)
-        if is_retry_data(candidate) then
-            return candidate, field_name
-        end
-    end
-
-    return nil, nil
-end
-
-local function find_retry_data_in_typed_members(root)
-    local found_value, found_name = nil, nil
-    local ok = pcall(function()
-        local type_definition = root:get_type_definition()
-        for _, field in ipairs(type_definition:get_fields()) do
-            if not field:is_static() then
-                local name = field:get_name()
-                local field_type = field:get_type()
-                local field_type_name = field_type ~= nil and field_type:get_full_name() or nil
-                if name:lower():find("retry", 1, true) ~= nil
-                    or (field_type_name ~= nil and field_type_name:find(RETRY_TYPE_FRAGMENT, 1, true) ~= nil) then
-                    local value = field:get_data(root)
-                    if is_retry_data(value) then
-                        found_value, found_name = value, name
-                        return
+            if current ~= nil and current >= 1 and current <= 10 then
+                if write_mandrake(enc, TARGET) then
+                    try_set_field(param, name, enc)
+                    if decode_mandrake(try_get_field(param, name)) == TARGET then
+                        state.writes = state.writes + 1
+                        state.max_deaths = TARGET
+                        state.last_path = "Param." .. name
+                        set_status("PlDieCountMax set to 99.", string.format("%s (was %d)", state.last_path, current))
+                        return true
                     end
                 end
             end
         end
+    end
 
-        for _, method in ipairs(type_definition:get_methods()) do
-            local name = method:get_name()
-            local return_type = method:get_return_type()
-            local return_type_name = return_type ~= nil and return_type:get_full_name() or nil
-            if name:sub(1, 4) == "get_"
-                and not method:is_static()
-                and method:get_num_params() == 0
-                and (name:lower():find("retry", 1, true) ~= nil
-                    or (return_type_name ~= nil and return_type_name:find(RETRY_TYPE_FRAGMENT, 1, true) ~= nil)) then
-                local value = method:call(root)
-                if is_retry_data(value) then
-                    found_value, found_name = value, name .. "()"
-                    return
-                end
-            end
+    -- 2) Offset fallback only while quest is live and value looks like a normal cap.
+    local current, divisor = decode_at(param, PL_DIE_COUNT_MAX_OFF)
+    if current == TARGET then
+        state.max_deaths = TARGET
+        state.last_path = "Param.PlDieCountMax@0xB8"
+        return true
+    end
+    if current ~= nil and current >= 1 and current <= 10 and divisor ~= nil then
+        if write_qword(param, PL_DIE_COUNT_MAX_OFF, TARGET * divisor)
+            and decode_at(param, PL_DIE_COUNT_MAX_OFF) == TARGET
+        then
+            state.writes = state.writes + 1
+            state.max_deaths = TARGET
+            state.last_path = "Param.PlDieCountMax@0xB8"
+            set_status("PlDieCountMax@0xB8 set to 99.", string.format("%s (was %d)", state.last_path, current))
+            return true
         end
-    end)
-    if ok then
-        return found_value, found_name
     end
-    return nil, nil
+
+    return false
 end
 
-local function append_root(roots, object, path)
-    if object ~= nil then
-        table.insert(roots, { object = object, path = path })
+local function read_deaths(qd)
+    local n = decode_mandrake(try_get_field(qd, "QuestPlDieCount"))
+    if n ~= nil then
+        state.deaths = n
     end
 end
 
-local function find_retry_data(mission_manager)
-    local roots = {}
-    append_root(roots, mission_manager, "MissionManager")
+local function maintain()
+    local qd = get_quest_director()
+    if qd == nil or not quest_is_live(qd) then
+        set_status("Waiting for quest.")
+        return
+    end
 
-    local quest_director = call_zero_arg_getter(mission_manager, "get_QuestDirector")
-    append_root(roots, quest_director, "MissionManager.get_QuestDirector()")
-    if quest_director ~= nil then
-        append_root(
-            roots,
-            call_zero_arg_getter(quest_director, "get_QuestData"),
-            "MissionManager.get_QuestDirector().get_QuestData()"
+    raise_ui_quest_life(qd)
+    raise_pl_die_count_max(qd)
+    read_deaths(qd)
+
+    if state.max_deaths == TARGET then
+        set_status(
+            "OK: faint cap 99.",
+            string.format("%s; deaths=%s", state.last_path, tostring(state.deaths or 0))
         )
-    end
-    append_root(roots, call_zero_arg_getter(mission_manager, "get_QuestData"), "MissionManager.get_QuestData()")
-
-    for _, root in ipairs(roots) do
-        local retry_data, member_name = find_retry_data_in_members(root.object)
-        if retry_data ~= nil then
-            return retry_data, root.path .. "." .. member_name
-        end
-        retry_data, member_name = find_retry_data_in_typed_members(root.object)
-        if retry_data ~= nil then
-            return retry_data, root.path .. "." .. member_name
-        end
-    end
-    return nil, nil
-end
-
-local function read_field(field, object)
-    local ok, value = pcall(function()
-        return field:get_data(object)
-    end)
-    return ok and type(value) == "number" and value == math.floor(value) and value or nil
-end
-
-local function read_property(getter, object)
-    local ok, value = pcall(function()
-        return getter:call(object)
-    end)
-    return ok and type(value) == "number" and value == math.floor(value) and value or nil
-end
-
-local function maintain_retry_cap()
-    local mission_manager = sdk.get_managed_singleton("app.MissionManager")
-    if mission_manager == nil then
-        set_status("Waiting for app.MissionManager.")
-        return
-    end
-
-    local retry_data, data_path = find_retry_data(mission_manager)
-    if retry_data == nil then
-        set_status("Waiting for quest retry data.")
-        return
-    end
-
-    local type_definition = retry_data:get_type_definition()
-    local field, field_name, field_type_name = integer_field(type_definition)
-    local getter = nil
-    local setter = nil
-    local member_name = field_name
-    if field == nil then
-        getter, setter, field_type_name = integer_property(type_definition)
-        member_name = "MaxRetryCnt"
-    end
-    if field == nil and getter == nil then
-        set_status("Retry data found, but MaxRetryCnt is unavailable.", type_name(retry_data) or "")
-        return
-    end
-
-    local current_value = field ~= nil and read_field(field, retry_data) or read_property(getter, retry_data)
-    if current_value == nil then
-        set_status("MaxRetryCnt is not a readable integer.", field_type_name or "")
-        return
-    end
-
-    state.last_path = data_path
-    state.last_member = member_name
-    state.last_value = current_value
-    if current_value >= TARGET_RETRY_CAP then
-        set_status("Quest retry cap is " .. tostring(current_value) .. ".", data_path)
-        return
-    end
-    if current_value < 1 then
-        set_status("MaxRetryCnt has an unexpected value; no change was made.", tostring(current_value))
-        return
-    end
-
-    local write_ok = false
-    if field ~= nil then
-        write_ok = pcall(function()
-            retry_data:set_field(field_name, TARGET_RETRY_CAP)
-        end)
+    elseif state.ui_life == TARGET then
+        set_status("QuestLife=99; PlDieCountMax not set yet.", state.last_path)
     else
-        write_ok = pcall(function()
-            setter:call(retry_data, TARGET_RETRY_CAP)
-        end)
+        set_status("Applying faint cap...")
     end
-    if not write_ok then
-        set_status("MaxRetryCnt write failed; no change was verified.", data_path)
-        return
-    end
-
-    local verified_value = field ~= nil and read_field(field, retry_data) or read_property(getter, retry_data)
-    if verified_value ~= TARGET_RETRY_CAP then
-        set_status("MaxRetryCnt write could not be verified.", data_path)
-        return
-    end
-
-    state.last_value = verified_value
-    state.writes = state.writes + 1
-    set_status("Quest retry cap raised from " .. tostring(current_value) .. " to " .. tostring(TARGET_RETRY_CAP) .. ".", data_path)
 end
 
 local function update()
-    state.frame_count = state.frame_count + 1
-    if state.frame_count % SCAN_INTERVAL_FRAMES ~= 0 then
+    state.frame = state.frame + 1
+    if state.frame % SCAN_INTERVAL ~= 0 then
         return
     end
-    local ok, error = pcall(maintain_retry_cap)
+    local ok, err = pcall(maintain)
     if not ok then
-        set_status("Runtime lookup failed; no change was made.", tostring(error):gsub("[\r\n]+", " "))
+        set_status("Error.", tostring(err):gsub("[\r\n]+", " "))
     end
 end
 
@@ -364,29 +285,37 @@ end
 re.on_frame(update)
 
 re.on_script_reset(function()
-    state.frame_count = 0
+    state.frame = 0
     state.status = "Script reset."
     state.detail = ""
+    state.writes = 0
+    state.ui_life = nil
+    state.max_deaths = nil
+    state.deaths = nil
     state.last_path = ""
-    state.last_member = ""
-    state.last_value = nil
 end)
 
 re.on_draw_ui(function()
     if not imgui.tree_node(MOD_NAME) then
         return
     end
-    imgui.text("Target retry cap: " .. tostring(TARGET_RETRY_CAP))
+    imgui.text("Target faint cap: " .. tostring(TARGET))
     imgui.text("Status: " .. state.status)
     if state.detail ~= "" then
         imgui.text("Detail: " .. state.detail)
     end
-    if state.last_member ~= "" then
-        imgui.text("Live member: " .. state.last_path .. "." .. state.last_member)
+    imgui.text("Writes: " .. tostring(state.writes))
+    if state.ui_life ~= nil then
+        imgui.text("QuestLife: " .. tostring(state.ui_life))
     end
-    if state.last_value ~= nil then
-        imgui.text("Last observed cap: " .. tostring(state.last_value))
+    if state.max_deaths ~= nil then
+        imgui.text("PlDieCountMax: " .. tostring(state.max_deaths))
     end
-    imgui.text("Verified writes this session: " .. tostring(state.writes))
+    if state.deaths ~= nil then
+        imgui.text("Deaths: " .. tostring(state.deaths))
+    end
+    if state.last_path ~= "" then
+        imgui.text("Path: " .. state.last_path)
+    end
     imgui.tree_pop()
 end)

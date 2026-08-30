@@ -1,4 +1,4 @@
-"""Build the Easier Hunting FMM archive from clean RSZ data."""
+"""Build the Easier Hunting FMM archives from clean RSZ data."""
 
 from __future__ import annotations
 
@@ -17,14 +17,16 @@ SOURCE_DIR = ROOT / "source"
 SCHEMA_PATH = SOURCE_DIR / "type_schema.json"
 RETRY_SCRIPT_PATH = SOURCE_DIR / "reframework" / "easier_hunting_retries.lua"
 DIST_DIR = ROOT / "dist"
-ARCHIVE_NAME = "Easier Hunting - TU4.1.zip"
-MOD_NAME = "Easier Hunting"
-MOD_VERSION = "1.5.0"
+MOD_VERSION = "1.6.0"
 MULTIPLIER = 2
 RESISTANCE_PER_PIECE = 2
 WEAPON_DATA_HASH = 0x045CB10D
 ZIP_TIMESTAMP = (1980, 1, 1, 0, 0, 0)
 RETRY_SCRIPT_ARCHIVE_PATH = "reframework/autorun/easier_hunting_retries.lua"
+
+# Kept for older verify/import call sites.
+ARCHIVE_NAME = "Easier Hunting - TU4.1.zip"
+MOD_NAME = "Easier Hunting"
 
 
 @dataclass(frozen=True)
@@ -34,6 +36,46 @@ class FieldSpec:
     scale_with_multiplier: bool = True
     addend: int = 0
     positive_only: bool = True
+
+
+@dataclass(frozen=True)
+class PackSpec:
+    archive_name: str
+    mod_name: str
+    description: str
+    include_stats: bool
+    include_retries: bool
+
+
+PACKS = (
+    PackSpec(
+        archive_name="Easier Hunting - TU4.1.zip",
+        mod_name="Easier Hunting",
+        description=(
+            f"{MULTIPLIER}x hunter attack/defense, "
+            f"+{RESISTANCE_PER_PIECE} resistance per armor piece, 99 quest retries."
+        ),
+        include_stats=True,
+        include_retries=True,
+    ),
+    PackSpec(
+        archive_name="Easier Hunting Stats - TU4.1.zip",
+        mod_name="Easier Hunting Stats",
+        description=(
+            f"{MULTIPLIER}x hunter attack/defense, "
+            f"+{RESISTANCE_PER_PIECE} resistance per armor piece. No retry script."
+        ),
+        include_stats=True,
+        include_retries=False,
+    ),
+    PackSpec(
+        archive_name="Easier Hunting Retries - TU4.1.zip",
+        mod_name="Easier Hunting Retries",
+        description="99 quest faint/cart retries (REFramework). No stat changes.",
+        include_stats=False,
+        include_retries=True,
+    ),
+)
 
 
 WEAPON_FILES = (
@@ -267,13 +309,23 @@ def sha256(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest().upper()
 
 
-def build_archive(output: Path, schema: dict) -> Path:
+def expected_members(pack: PackSpec) -> set[str]:
+    members = {"modinfo.ini"}
+    if pack.include_stats:
+        members |= {relative_path.as_posix() for relative_path, _specs in TARGETS}
+    if pack.include_retries:
+        members.add(RETRY_SCRIPT_ARCHIVE_PATH)
+    return members
+
+
+def build_archive(pack: PackSpec, schema: dict, transformed: dict[str, bytes] | None = None) -> Path:
+    output = DIST_DIR / pack.archive_name
     output.parent.mkdir(parents=True, exist_ok=True)
     manifest = "\n".join(
         (
-            f"name={MOD_NAME}",
+            f"name={pack.mod_name}",
             f"version={MOD_VERSION}",
-            f"description={MULTIPLIER}x hunter attack/defense, +{RESISTANCE_PER_PIECE} resistance per armor piece, 99 quest retries.",
+            f"description={pack.description}",
             "author=OpenCode",
             "category=Gameplay",
             "",
@@ -281,28 +333,67 @@ def build_archive(output: Path, schema: dict) -> Path:
     ).encode("ascii")
     with zipfile.ZipFile(output, "w", compression=zipfile.ZIP_DEFLATED, compresslevel=9) as archive:
         zip_entry(archive, "modinfo.ini", manifest)
-        for relative_path, specs in TARGETS:
-            zip_entry(archive, relative_path.as_posix(), transform(SOURCE_DIR / relative_path, specs, schema))
-        zip_entry(archive, RETRY_SCRIPT_ARCHIVE_PATH, RETRY_SCRIPT_PATH.read_bytes())
+        if pack.include_stats:
+            for relative_path, specs in TARGETS:
+                payload = (
+                    transformed[relative_path.as_posix()]
+                    if transformed is not None
+                    else transform(SOURCE_DIR / relative_path, specs, schema)
+                )
+                zip_entry(archive, relative_path.as_posix(), payload)
+        if pack.include_retries:
+            zip_entry(archive, RETRY_SCRIPT_ARCHIVE_PATH, RETRY_SCRIPT_PATH.read_bytes())
     return output
 
 
-def write_checksums(archive: Path) -> None:
+def write_checksums(archives: list[Path]) -> None:
     paths = [SOURCE_DIR / relative_path for relative_path, _ in TARGETS]
     paths.append(RETRY_SCRIPT_PATH)
-    paths.append(archive)
+    paths.extend(archives)
     lines = [f"{sha256(path)}  {path.relative_to(ROOT).as_posix()}" for path in paths]
     (ROOT / "SHA256SUMS.txt").write_text("\n".join(lines) + "\n", encoding="ascii")
 
 
+def build_all(schema: dict) -> list[Path]:
+    transformed = {
+        relative_path.as_posix(): transform(SOURCE_DIR / relative_path, specs, schema)
+        for relative_path, specs in TARGETS
+    }
+    archives = [build_archive(pack, schema, transformed) for pack in PACKS]
+    write_checksums(archives)
+    return archives
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--output", type=Path, default=DIST_DIR / ARCHIVE_NAME)
+    parser.add_argument(
+        "--pack",
+        choices=["all", "full", "stats", "retries"],
+        default="all",
+        help="Which archive set to build (default: all three).",
+    )
     args = parser.parse_args()
     schema = json.loads(SCHEMA_PATH.read_text(encoding="utf-8"))
-    archive = build_archive(args.output, schema)
-    write_checksums(archive)
-    print(archive)
+
+    if args.pack == "all":
+        archives = build_all(schema)
+    else:
+        selected = {
+            "full": PACKS[0],
+            "stats": PACKS[1],
+            "retries": PACKS[2],
+        }[args.pack]
+        transformed = None
+        if selected.include_stats:
+            transformed = {
+                relative_path.as_posix(): transform(SOURCE_DIR / relative_path, specs, schema)
+                for relative_path, specs in TARGETS
+            }
+        archives = [build_archive(selected, schema, transformed)]
+        write_checksums(archives)
+
+    for archive in archives:
+        print(archive)
 
 
 if __name__ == "__main__":

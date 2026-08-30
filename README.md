@@ -2,7 +2,7 @@
 
 **Language / 语言:** [English](README.md) | [简体中文](README.zh-CN.md)
 
-Monster Hunter Wilds TU4.1 FMM pack for offline / solo / private play. Fixed values:
+Monster Hunter Wilds TU4.1 FMM packs for offline / solo / private play.
 
 | Feature | Effect |
 | --- | --- |
@@ -13,10 +13,20 @@ Monster Hunter Wilds TU4.1 FMM pack for offline / solo / private play. Fixed val
 
 Otomo gear is unchanged. Zeros and negative sentinels are left alone.
 
+## Packages (v1.6.0)
+
+| Zip | Contents |
+| --- | --- |
+| [`Easier Hunting - TU4.1.zip`](dist/Easier%20Hunting%20-%20TU4.1.zip) | Full: stats + 99 retries |
+| [`Easier Hunting Stats - TU4.1.zip`](dist/Easier%20Hunting%20Stats%20-%20TU4.1.zip) | Stats only (no retry script) |
+| [`Easier Hunting Retries - TU4.1.zip`](dist/Easier%20Hunting%20Retries%20-%20TU4.1.zip) | 99 retries only (no stat files) |
+
+Do **not** enable the full pack together with Stats (double stats) or together with Retries (duplicate script). Stats + Retries as two separate packs is fine.
+
 ## Install
 
-1. Disable old Easier Hunting and any separate retry mod in FMM.
-2. Copy [`dist/Easier Hunting - TU4.1.zip`](dist/Easier%20Hunting%20-%20TU4.1.zip) into FMM's Wilds `Mods` folder.
+1. Disable old Easier Hunting packs in FMM.
+2. Copy the zip(s) you want into FMM's Wilds `Mods` folder.
 3. Refresh, enable, restart the game.
 
 Only use retries offline / solo / in private sessions.

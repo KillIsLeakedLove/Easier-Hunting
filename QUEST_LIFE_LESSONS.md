@@ -55,7 +55,7 @@
 | 指望 `getKeepQuestText` / fail-life MessageInfo 改任务内「倒下次数」 | 开任务信息只打 `life-get orig=3`，从不调 `getFailConditionText_Life`。`getKeepQuestText` 不是这句 HUD | 1.7.85 |
 | 对 hook 的 Byte retval `to_valuetype` 再 `to_ptr(vt)` | `play=true` 但无 `life-vt`。valuetype 写不成 99，没返回新指针。HUD 仍 0/3 | 1.7.86 |
 | 对 get_QuestLife 的 Byte 槽 `write_byte` / ffi poke | retval 是 `userdata: 0000000000000003`。`life-poke how=far after=3`。HUD 仍 0/3 | 1.7.89 |
-| 指望 `GUI080000` / `_Contexts` / `onOpenApp` 改任务内「倒下次数」 | GUI080000 是装备/猎人信息。开任务信息走 `getKeepQuestText` + `getFailConditionText_TimeLimit`，**不走** `getFailConditionText_Life`。随后 `life-get orig=3`。`_Contexts` 有 311 个池项。0/3 就是 get_QuestLife | 1.7.92 |
+| 只 hook `cKeepQuestData` + `cActiveQuestData` 的 `get_QuestLife` | 任务内 HUD 不进 post，显示 0/3。HookManager 只有一个地址。Playing 门也不要在 hook 里 `get_QuestDirector` | 1.7.95 |
 
 Steam / 游戏目录 / 存档：只读。zip 只进 FMM `Mods`。
 
@@ -172,8 +172,18 @@ Steam / 游戏目录 / 存档：只读。zip 只进 FMM `Mods`。
 | 1.7.91 | 扫 GUI ID + hook onOpenApp | 任务内仍 0/3。无 `gui-open`。`_Contexts` 没展开 | 不要只 hook onOpenApp |
 | 1.7.92 | dump _Contexts + hook GUI080000 | 任务内仍 0/3。开信息只有 TimeLimit + get_QuestLife=3 | GUI080000 不是任务信息。0/3 直接来自 get_QuestLife |
 | 1.7.93 | Playing 时 return to_ptr(99)，且指针位必须是 99 | **任务内 0/99**。列表 99。真实上限 99 | 这是 get_QuestLife Byte 的正确编码。加载/接任务时仍返回原值，否则会团灭（1.7.80） |
+| 1.7.94 | 关掉失败实验残留：Format/Text/`message.get`/`SKIP addParam`/GUI 扫描/`on_pre_gui_draw`/`0xA0`/blob/scan3/静态 QUEST_LIFE；列表+HUD+B8 三条路径不改 | 待测：开机不黑屏、村子不卡、列表 99、进任务不闪、任务内 0/99 | 诊断 hook 本身就是黑屏/卡顿/闪退面。成功路径只有 makeParamData、Playing `to_ptr(99)`、B8 |
+| 1.7.95 | 按三条成功路径重写运行时，不改编码 | 任务内「倒下次数 **0/3**」。列表 make-post 有。HookManager 只加了 **一个** `get_QuestLife` @ `0x144c64240`。全程无 `life-ptr`/`life-get` | 只 hook KeepQuest+ActiveQuestData 不够。HUD 走的是别的 `get_QuestLife` 地址。hook 内不要再 `get_QuestDirector`；Playing 门只用缓存的 director |
 
 ## 已完成（1.7.93）
 
 调查任务：列表「力尽倒下99次」、任务内「倒下次数 0/99」、真实团灭上限 99（B8）。Playing 时 `get_QuestLife` 只返回指针位为 99 的 `to_ptr(99)`；加载期不改返回值。
+
+## 1.7.95
+
+运行时按列表 / HUD / B8 重写。任务内 HUD 回归 0/3：只挂上一个 `get_QuestLife`，post 没进。
+
+## 1.7.96
+
+按 1.7.93 的类型列表 hook 所有名为 `get_QuestLife` 的方法（含父类型、进本后 director 上的实际类型；不含 `getQuestLife`）。Playing 门只用缓存 director（`MissionManager+0x178`）。编码仍是 Playing-only `to_ptr(99)`。
 

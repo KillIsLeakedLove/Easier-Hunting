@@ -13,7 +13,7 @@
 
 随从装备不改。零值和负数哨兵不放大。
 
-## 分包（v1.7.93）
+## 分包（v1.7.96）
 
 一个压缩包：[`Easier Hunting - TU4.1.zip`](dist/Easier%20Hunting%20-%20TU4.1.zip)
 

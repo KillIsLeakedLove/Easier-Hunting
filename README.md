@@ -13,7 +13,7 @@ Monster Hunter Wilds TU4.1 FMM pack for offline / solo / private play.
 
 Otomo gear is unchanged. Zeros and negative sentinels are left alone.
 
-## Package (v1.7.93)
+## Package (v1.7.96)
 
 One zip: [`Easier Hunting - TU4.1.zip`](dist/Easier%20Hunting%20-%20TU4.1.zip)
 

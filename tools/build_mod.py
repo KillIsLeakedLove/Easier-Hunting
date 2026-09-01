@@ -1,8 +1,7 @@
-"""Build the Easier Hunting FMM archives from clean RSZ data."""
+"""Build the Easier Hunting FMM archive from clean RSZ data."""
 
 from __future__ import annotations
 
-import argparse
 import hashlib
 import json
 import struct
@@ -17,16 +16,22 @@ SOURCE_DIR = ROOT / "source"
 SCHEMA_PATH = SOURCE_DIR / "type_schema.json"
 RETRY_SCRIPT_PATH = SOURCE_DIR / "reframework" / "easier_hunting_retries.lua"
 DIST_DIR = ROOT / "dist"
-MOD_VERSION = "1.6.0"
+ARCHIVE_NAME = "Easier Hunting - TU4.1.zip"
+MOD_NAME = "Easier Hunting"
+MOD_VERSION = "1.7.93"
 MULTIPLIER = 2
 RESISTANCE_PER_PIECE = 2
 WEAPON_DATA_HASH = 0x045CB10D
 ZIP_TIMESTAMP = (1980, 1, 1, 0, 0, 0)
 RETRY_SCRIPT_ARCHIVE_PATH = "reframework/autorun/easier_hunting_retries.lua"
+RETRY_OFF_SCRIPT = b"-- Easier Hunting: quest retries disabled.\nreturn\n"
 
-# Kept for older verify/import call sites.
-ARCHIVE_NAME = "Easier Hunting - TU4.1.zip"
-MOD_NAME = "Easier Hunting"
+STATS_GROUP_NAME = "1. Attack / Defense / Resistance"
+RETRIES_GROUP_NAME = "2. Quest Retries"
+STATS_ON_NAME = "On (2x)"
+STATS_OFF_NAME = "Off (vanilla)"
+RETRIES_ON_NAME = "On (99)"
+RETRIES_OFF_NAME = "Off (default)"
 
 
 @dataclass(frozen=True)
@@ -39,41 +44,78 @@ class FieldSpec:
 
 
 @dataclass(frozen=True)
-class PackSpec:
-    archive_name: str
-    mod_name: str
+class OptionSpec:
+    folder: str
+    name: str
     description: str
-    include_stats: bool
-    include_retries: bool
+    addon_for: str | None
+    menu_priority: int
+    kind: str
 
 
-PACKS = (
-    PackSpec(
-        archive_name="Easier Hunting - TU4.1.zip",
-        mod_name="Easier Hunting",
+OPTIONS = (
+    OptionSpec(
+        folder="00 - Easier Hunting",
+        name=MOD_NAME,
         description=(
             f"{MULTIPLIER}x hunter attack/defense, "
-            f"+{RESISTANCE_PER_PIECE} resistance per armor piece, 99 quest retries."
+            f"+{RESISTANCE_PER_PIECE} resistance per armor piece, 99 quest retries. "
+            "Open this menu and enable one option in each group."
         ),
-        include_stats=True,
-        include_retries=True,
+        addon_for=None,
+        menu_priority=50,
+        kind="master",
     ),
-    PackSpec(
-        archive_name="Easier Hunting Stats - TU4.1.zip",
-        mod_name="Easier Hunting Stats",
+    OptionSpec(
+        folder="10 - Stats",
+        name=STATS_GROUP_NAME,
+        description="Enable On or Off. Do not enable both.",
+        addon_for=MOD_NAME,
+        menu_priority=20,
+        kind="group",
+    ),
+    OptionSpec(
+        folder="11 - Stats On",
+        name=STATS_ON_NAME,
         description=(
-            f"{MULTIPLIER}x hunter attack/defense, "
-            f"+{RESISTANCE_PER_PIECE} resistance per armor piece. No retry script."
+            f"Hunter weapon attack x{MULTIPLIER}, armor defense x{MULTIPLIER}, "
+            f"+{RESISTANCE_PER_PIECE} resistance per piece (~+10 full set)."
         ),
-        include_stats=True,
-        include_retries=False,
+        addon_for=STATS_GROUP_NAME,
+        menu_priority=2,
+        kind="stats_on",
     ),
-    PackSpec(
-        archive_name="Easier Hunting Retries - TU4.1.zip",
-        mod_name="Easier Hunting Retries",
-        description="99 quest faint/cart retries (REFramework). No stat changes.",
-        include_stats=False,
-        include_retries=True,
+    OptionSpec(
+        folder="12 - Stats Off",
+        name=STATS_OFF_NAME,
+        description="Restore vanilla hunter attack, defense, and resistance files.",
+        addon_for=STATS_GROUP_NAME,
+        menu_priority=1,
+        kind="stats_off",
+    ),
+    OptionSpec(
+        folder="20 - Retries",
+        name=RETRIES_GROUP_NAME,
+        description="Enable On or Off. Do not enable both. Requires REFramework.",
+        addon_for=MOD_NAME,
+        menu_priority=10,
+        kind="group",
+    ),
+    OptionSpec(
+        folder="21 - Retries On",
+        name=RETRIES_ON_NAME,
+        description="Quest faint/cart cap 99, including the quest board list. Offline / solo / private sessions only.",
+        addon_for=RETRIES_GROUP_NAME,
+        menu_priority=2,
+        kind="retries_on",
+    ),
+    OptionSpec(
+        folder="22 - Retries Off",
+        name=RETRIES_OFF_NAME,
+        description="Remove the 99-cart script (writes an idle stub over the autorun file).",
+        addon_for=RETRIES_GROUP_NAME,
+        menu_priority=1,
+        kind="retries_off",
     ),
 )
 
@@ -309,91 +351,84 @@ def sha256(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest().upper()
 
 
-def expected_members(pack: PackSpec) -> set[str]:
-    members = {"modinfo.ini"}
-    if pack.include_stats:
-        members |= {relative_path.as_posix() for relative_path, _specs in TARGETS}
-    if pack.include_retries:
-        members.add(RETRY_SCRIPT_ARCHIVE_PATH)
+def option_path(option: OptionSpec, relative: str) -> str:
+    return f"{option.folder}/{relative}"
+
+
+def modinfo_bytes(option: OptionSpec) -> bytes:
+    lines = [
+        f"name={option.name}",
+        f"version={MOD_VERSION}",
+        f"description={option.description}",
+        "author=OpenCode",
+        "category=Gameplay",
+    ]
+    if option.addon_for:
+        lines.append(f"AddonFor={option.addon_for}")
+    lines.append(f"MenuPriority={option.menu_priority}")
+    lines.append("")
+    return "\n".join(lines).encode("ascii")
+
+
+def option_members(option: OptionSpec) -> set[str]:
+    members = {option_path(option, "modinfo.ini")}
+    if option.kind in {"stats_on", "stats_off"}:
+        members |= {option_path(option, relative.as_posix()) for relative, _specs in TARGETS}
+    if option.kind in {"retries_on", "retries_off"}:
+        members.add(option_path(option, RETRY_SCRIPT_ARCHIVE_PATH))
     return members
 
 
-def build_archive(pack: PackSpec, schema: dict, transformed: dict[str, bytes] | None = None) -> Path:
-    output = DIST_DIR / pack.archive_name
-    output.parent.mkdir(parents=True, exist_ok=True)
-    manifest = "\n".join(
-        (
-            f"name={pack.mod_name}",
-            f"version={MOD_VERSION}",
-            f"description={pack.description}",
-            "author=OpenCode",
-            "category=Gameplay",
-            "",
-        )
-    ).encode("ascii")
-    with zipfile.ZipFile(output, "w", compression=zipfile.ZIP_DEFLATED, compresslevel=9) as archive:
-        zip_entry(archive, "modinfo.ini", manifest)
-        if pack.include_stats:
-            for relative_path, specs in TARGETS:
-                payload = (
-                    transformed[relative_path.as_posix()]
-                    if transformed is not None
-                    else transform(SOURCE_DIR / relative_path, specs, schema)
-                )
-                zip_entry(archive, relative_path.as_posix(), payload)
-        if pack.include_retries:
-            zip_entry(archive, RETRY_SCRIPT_ARCHIVE_PATH, RETRY_SCRIPT_PATH.read_bytes())
-    return output
+def expected_members() -> set[str]:
+    members: set[str] = set()
+    for option in OPTIONS:
+        members |= option_members(option)
+    return members
 
 
-def write_checksums(archives: list[Path]) -> None:
+def write_option(
+    archive: zipfile.ZipFile,
+    option: OptionSpec,
+    transformed: dict[str, bytes],
+) -> None:
+    zip_entry(archive, option_path(option, "modinfo.ini"), modinfo_bytes(option))
+    if option.kind == "stats_on":
+        for relative_path, _specs in TARGETS:
+            zip_entry(archive, option_path(option, relative_path.as_posix()), transformed[relative_path.as_posix()])
+    elif option.kind == "stats_off":
+        for relative_path, _specs in TARGETS:
+            zip_entry(archive, option_path(option, relative_path.as_posix()), (SOURCE_DIR / relative_path).read_bytes())
+    elif option.kind == "retries_on":
+        zip_entry(archive, option_path(option, RETRY_SCRIPT_ARCHIVE_PATH), RETRY_SCRIPT_PATH.read_bytes())
+    elif option.kind == "retries_off":
+        zip_entry(archive, option_path(option, RETRY_SCRIPT_ARCHIVE_PATH), RETRY_OFF_SCRIPT)
+
+
+def write_checksums(archive: Path) -> None:
     paths = [SOURCE_DIR / relative_path for relative_path, _ in TARGETS]
     paths.append(RETRY_SCRIPT_PATH)
-    paths.extend(archives)
+    paths.append(archive)
     lines = [f"{sha256(path)}  {path.relative_to(ROOT).as_posix()}" for path in paths]
     (ROOT / "SHA256SUMS.txt").write_text("\n".join(lines) + "\n", encoding="ascii")
 
 
-def build_all(schema: dict) -> list[Path]:
+def build() -> Path:
+    schema = json.loads(SCHEMA_PATH.read_text(encoding="utf-8"))
     transformed = {
         relative_path.as_posix(): transform(SOURCE_DIR / relative_path, specs, schema)
         for relative_path, specs in TARGETS
     }
-    archives = [build_archive(pack, schema, transformed) for pack in PACKS]
-    write_checksums(archives)
-    return archives
+    output = DIST_DIR / ARCHIVE_NAME
+    output.parent.mkdir(parents=True, exist_ok=True)
+    with zipfile.ZipFile(output, "w", compression=zipfile.ZIP_DEFLATED, compresslevel=9) as archive:
+        for option in OPTIONS:
+            write_option(archive, option, transformed)
+    write_checksums(output)
+    return output
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument(
-        "--pack",
-        choices=["all", "full", "stats", "retries"],
-        default="all",
-        help="Which archive set to build (default: all three).",
-    )
-    args = parser.parse_args()
-    schema = json.loads(SCHEMA_PATH.read_text(encoding="utf-8"))
-
-    if args.pack == "all":
-        archives = build_all(schema)
-    else:
-        selected = {
-            "full": PACKS[0],
-            "stats": PACKS[1],
-            "retries": PACKS[2],
-        }[args.pack]
-        transformed = None
-        if selected.include_stats:
-            transformed = {
-                relative_path.as_posix(): transform(SOURCE_DIR / relative_path, specs, schema)
-                for relative_path, specs in TARGETS
-            }
-        archives = [build_archive(selected, schema, transformed)]
-        write_checksums(archives)
-
-    for archive in archives:
-        print(archive)
+    print(build())
 
 
 if __name__ == "__main__":

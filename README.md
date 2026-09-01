@@ -2,7 +2,7 @@
 
 **Language / 语言:** [English](README.md) | [简体中文](README.zh-CN.md)
 
-Monster Hunter Wilds TU4.1 FMM packs for offline / solo / private play.
+Monster Hunter Wilds TU4.1 FMM pack for offline / solo / private play.
 
 | Feature | Effect |
 | --- | --- |
@@ -13,21 +13,24 @@ Monster Hunter Wilds TU4.1 FMM packs for offline / solo / private play.
 
 Otomo gear is unchanged. Zeros and negative sentinels are left alone.
 
-## Packages (v1.6.0)
+## Package (v1.7.93)
 
-| Zip | Contents |
-| --- | --- |
-| [`Easier Hunting - TU4.1.zip`](dist/Easier%20Hunting%20-%20TU4.1.zip) | Full: stats + 99 retries |
-| [`Easier Hunting Stats - TU4.1.zip`](dist/Easier%20Hunting%20Stats%20-%20TU4.1.zip) | Stats only (no retry script) |
-| [`Easier Hunting Retries - TU4.1.zip`](dist/Easier%20Hunting%20Retries%20-%20TU4.1.zip) | 99 retries only (no stat files) |
+One zip: [`Easier Hunting - TU4.1.zip`](dist/Easier%20Hunting%20-%20TU4.1.zip)
 
-Do **not** enable the full pack together with Stats (double stats) or together with Retries (duplicate script). Stats + Retries as two separate packs is fine.
+In FMM, open **Easier Hunting**. There are two independent groups. Enable **exactly one** option in each group:
+
+| Group | On | Off |
+| --- | --- | --- |
+| **1. Attack / Defense / Resistance** | 2x attack/defense, +2 resistance per piece | Vanilla hunter stats |
+| **2. Quest Retries** | Faint/cart cap 99 | Default retry cap |
+
+The four combinations are: stats only, retries only, both, or neither.
 
 ## Install
 
-1. Disable old Easier Hunting packs in FMM.
-2. Copy the zip(s) you want into FMM's Wilds `Mods` folder.
-3. Refresh, enable, restart the game.
+1. In FMM, disable and remove older Easier Hunting zips (including the v1.6 split Stats / Retries packs).
+2. Copy `Easier Hunting - TU4.1.zip` into FMM's Wilds `Mods` folder.
+3. Refresh, open **Easier Hunting**, pick On or Off in each group, then start the game from FMM.
 
 Only use retries offline / solo / in private sessions.
 

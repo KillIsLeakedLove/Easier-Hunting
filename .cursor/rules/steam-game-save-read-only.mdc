@@ -1,0 +1,18 @@
+---
+description: Steam / 游戏安装 / 存档目录只读，禁止任何写入
+alwaysApply: true
+---
+
+# Steam、游戏安装、存档：只读
+
+严禁对以下位置做任何**非读**操作（写入、复制、移动、删除、改权限、清缓存、安装/卸载等一律禁止）：
+
+- **Steam 目录**（客户端、`steamapps`、library、userdata、`common` 等）
+- **游戏安装目录**（含 `MonsterHunterWilds`、`reframework`、`natives`、`autorun` 等）
+- **游戏存档目录**（Steam Cloud userdata、本机 save 槽等）
+
+允许：只读查看（读文件、列目录、查日志、对哈希）。
+
+交付：只改本 git 仓库；产出 zip **仅**放到 Fluffy Mod Manager 的 `Games/MonsterHunterWilds/Mods/`。FMM 缓存/本 mod 旧包只动 FMM 自己的 Mods/cache，不动 Steam 与游戏目录。
+
+即使用户要「拷进 autorun 方便测试」也不要做；让用户用 FMM 安装。不要为了回滚再去改游戏目录。

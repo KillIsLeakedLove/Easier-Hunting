@@ -13,21 +13,24 @@
 
 随从装备不改。零值和负数哨兵不放大。
 
-## 分包（v1.6.0）
+## 分包（v1.7.93）
 
-| 压缩包 | 内容 |
-| --- | --- |
-| [`Easier Hunting - TU4.1.zip`](dist/Easier%20Hunting%20-%20TU4.1.zip) | 完整：数值 + 99 倒下 |
-| [`Easier Hunting Stats - TU4.1.zip`](dist/Easier%20Hunting%20Stats%20-%20TU4.1.zip) | 仅数值（无重试脚本） |
-| [`Easier Hunting Retries - TU4.1.zip`](dist/Easier%20Hunting%20Retries%20-%20TU4.1.zip) | 仅 99 倒下（无数值文件） |
+一个压缩包：[`Easier Hunting - TU4.1.zip`](dist/Easier%20Hunting%20-%20TU4.1.zip)
 
-不要同时启用完整包与 Stats（数值会叠），也不要完整包与 Retries 一起开（脚本重复）。Stats + Retries 两个分包可以一起用。
+在 FMM 里点开 **Easier Hunting**。两组功能互相独立，**每组只开其中一个**：
+
+| 分组 | On | Off |
+| --- | --- | --- |
+| **1. Attack / Defense / Resistance** | 攻击/防御 2 倍，每件耐性 +2 | 还原原版猎人数值 |
+| **2. Quest Retries** | 倒下上限 99 | 游戏默认倒下次数 |
+
+四种组合都可以：只开数值、只开重试、两个都开、两个都关。
 
 ## 安装
 
-1. 在 FMM 里卸掉旧版 Easier Hunting 相关包。
-2. 把需要的 zip 放进 FMM 的 Wilds `Mods` 目录。
-3. 刷新并启用，重启游戏。
+1. 在 FMM 里关掉并移除旧版 Easier Hunting（包括 v1.6 拆开的 Stats / Retries 包）。
+2. 把 `Easier Hunting - TU4.1.zip` 放进 FMM 的 Wilds `Mods` 目录。
+3. 刷新，打开 **Easier Hunting**，每组选 On 或 Off，再用 FMM 启动游戏。
 
 重试只建议离线 / 单人 / 私人局使用。
 

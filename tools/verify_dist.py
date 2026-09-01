@@ -1,4 +1,4 @@
-"""Verify the Easier Hunting FMM archives."""
+"""Verify the Easier Hunting FMM options bundle."""
 
 from __future__ import annotations
 
@@ -12,7 +12,7 @@ import build_mod
 
 ROOT = Path(__file__).resolve().parents[1]
 SOURCE_DIR = ROOT / "source"
-DIST_DIR = ROOT / "dist"
+ARCHIVE_PATH = ROOT / "dist" / build_mod.ARCHIVE_NAME
 
 
 def sha256(path: Path) -> str:
@@ -43,57 +43,75 @@ def expected_value(value: int, spec: build_mod.FieldSpec) -> int:
     return value + spec.addend
 
 
-def verify_pack(pack: build_mod.PackSpec, schema: dict) -> None:
-    archive_path = DIST_DIR / pack.archive_name
-    expected = build_mod.expected_members(pack)
-    with zipfile.ZipFile(archive_path) as archive:
+def verify_modinfo(archive: zipfile.ZipFile, option: build_mod.OptionSpec) -> None:
+    text = archive.read(build_mod.option_path(option, "modinfo.ini")).decode("ascii")
+    if f"name={option.name}" not in text:
+        raise ValueError(f"{option.folder}: modinfo name mismatch")
+    if f"version={build_mod.MOD_VERSION}" not in text:
+        raise ValueError(f"{option.folder}: modinfo version mismatch")
+    if option.addon_for:
+        if f"AddonFor={option.addon_for}" not in text:
+            raise ValueError(f"{option.folder}: AddonFor mismatch")
+    elif "AddonFor=" in text:
+        raise ValueError(f"{option.folder}: unexpected AddonFor")
+
+
+def verify_stats(archive: zipfile.ZipFile, option: build_mod.OptionSpec, schema: dict, *, scaled: bool) -> None:
+    for relative_path, specs in build_mod.TARGETS:
+        payload = archive.read(build_mod.option_path(option, relative_path.as_posix()))
+        source = (SOURCE_DIR / relative_path).read_bytes()
+        if scaled:
+            source_values = field_values(source, specs, schema)
+            archive_values = field_values(payload, specs, schema)
+            for spec in specs:
+                expected_vals = [expected_value(value, spec) for value in source_values[spec]]
+                if archive_values[spec] != expected_vals:
+                    raise ValueError(f"{option.folder}: stat verify failed {relative_path} {spec.name}")
+        elif payload != source:
+            raise ValueError(f"{option.folder}: vanilla restore mismatch {relative_path}")
+
+
+def verify_archive(schema: dict) -> None:
+    expected = build_mod.expected_members()
+    with zipfile.ZipFile(ARCHIVE_PATH) as archive:
         members = {entry.filename for entry in archive.infolist()}
         if members != expected:
-            raise ValueError(f"{pack.archive_name}: unexpected members {sorted(members)}")
+            raise ValueError(f"unexpected members {sorted(members ^ expected)}")
         if any(entry.is_dir() for entry in archive.infolist()):
-            raise ValueError(f"{pack.archive_name}: contains directory entries")
+            raise ValueError("archive contains directory entries")
 
-        modinfo = archive.read("modinfo.ini").decode("ascii")
-        if f"name={pack.mod_name}" not in modinfo:
-            raise ValueError(f"{pack.archive_name}: modinfo name mismatch")
-        if f"version={build_mod.MOD_VERSION}" not in modinfo:
-            raise ValueError(f"{pack.archive_name}: modinfo version mismatch")
+        names = [option.name for option in build_mod.OPTIONS]
+        if len(names) != len(set(names)):
+            raise ValueError(f"duplicate option names: {names}")
 
-        if pack.include_retries:
-            if archive.read(build_mod.RETRY_SCRIPT_ARCHIVE_PATH) != build_mod.RETRY_SCRIPT_PATH.read_bytes():
-                raise ValueError(f"{pack.archive_name}: retry script mismatch")
-        elif build_mod.RETRY_SCRIPT_ARCHIVE_PATH in members:
-            raise ValueError(f"{pack.archive_name}: unexpected retry script")
+        for option in build_mod.OPTIONS:
+            verify_modinfo(archive, option)
+            option_files = {name for name in members if name.startswith(option.folder + "/")}
+            if option_files != build_mod.option_members(option):
+                raise ValueError(f"{option.folder}: unexpected files {sorted(option_files)}")
+            if option.kind == "stats_on":
+                verify_stats(archive, option, schema, scaled=True)
+            elif option.kind == "stats_off":
+                verify_stats(archive, option, schema, scaled=False)
+            elif option.kind == "retries_on":
+                payload = archive.read(build_mod.option_path(option, build_mod.RETRY_SCRIPT_ARCHIVE_PATH))
+                if payload != build_mod.RETRY_SCRIPT_PATH.read_bytes():
+                    raise ValueError(f"{option.folder}: retry script mismatch")
+            elif option.kind == "retries_off":
+                payload = archive.read(build_mod.option_path(option, build_mod.RETRY_SCRIPT_ARCHIVE_PATH))
+                if payload != build_mod.RETRY_OFF_SCRIPT:
+                    raise ValueError(f"{option.folder}: retry-off stub mismatch")
 
-        if pack.include_stats:
-            for relative_path, specs in build_mod.TARGETS:
-                source_values = field_values((SOURCE_DIR / relative_path).read_bytes(), specs, schema)
-                archive_values = field_values(archive.read(relative_path.as_posix()), specs, schema)
-                for spec in specs:
-                    expected_vals = [expected_value(value, spec) for value in source_values[spec]]
-                    if archive_values[spec] != expected_vals:
-                        raise ValueError(f"{pack.archive_name}: stat verify failed {relative_path} {spec.name}")
-        else:
-            natives = [name for name in members if name.startswith("natives/")]
-            if natives:
-                raise ValueError(f"{pack.archive_name}: unexpected natives {natives}")
-
-    print(f"verified {pack.archive_name}: {len(expected)} entries")
+    print(f"verified {ARCHIVE_PATH.name}: {len(expected)} entries, {len(build_mod.OPTIONS)} options")
 
 
-def main() -> None:
-    schema = json.loads((SOURCE_DIR / "type_schema.json").read_text(encoding="utf-8"))
-    for pack in build_mod.PACKS:
-        verify_pack(pack, schema)
-
+def verify_checksums() -> None:
     expected_sums: dict[str, str] = {}
     for relative_path, _ in build_mod.TARGETS:
         path = SOURCE_DIR / relative_path
         expected_sums[path.relative_to(ROOT).as_posix()] = sha256(path)
     expected_sums[build_mod.RETRY_SCRIPT_PATH.relative_to(ROOT).as_posix()] = sha256(build_mod.RETRY_SCRIPT_PATH)
-    for pack in build_mod.PACKS:
-        path = DIST_DIR / pack.archive_name
-        expected_sums[path.relative_to(ROOT).as_posix()] = sha256(path)
+    expected_sums[ARCHIVE_PATH.relative_to(ROOT).as_posix()] = sha256(ARCHIVE_PATH)
 
     actual_sums = {}
     for line in (ROOT / "SHA256SUMS.txt").read_text(encoding="ascii").splitlines():
@@ -102,7 +120,12 @@ def main() -> None:
     if actual_sums != expected_sums:
         raise ValueError("SHA256SUMS.txt does not match current files")
 
-    print(f"verified {len(build_mod.PACKS)} packs + checksums")
+
+def main() -> None:
+    schema = json.loads((SOURCE_DIR / "type_schema.json").read_text(encoding="utf-8"))
+    verify_archive(schema)
+    verify_checksums()
+    print("verified checksums")
 
 
 if __name__ == "__main__":

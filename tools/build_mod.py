@@ -18,20 +18,26 @@ RETRY_SCRIPT_PATH = SOURCE_DIR / "reframework" / "easier_hunting_retries.lua"
 DIST_DIR = ROOT / "dist"
 ARCHIVE_NAME = "Easier Hunting - TU4.1.zip"
 MOD_NAME = "Easier Hunting"
-MOD_VERSION = "1.7.96"
-MULTIPLIER = 2
-RESISTANCE_PER_PIECE = 2
+MOD_VERSION = "1.7.100"
 WEAPON_DATA_HASH = 0x045CB10D
 ZIP_TIMESTAMP = (1980, 1, 1, 0, 0, 0)
 RETRY_SCRIPT_ARCHIVE_PATH = "reframework/autorun/easier_hunting_retries.lua"
-RETRY_OFF_SCRIPT = b"-- Easier Hunting: quest retries disabled.\nreturn\n"
+RETRY_OFF_SCRIPT = "-- Easier Hunting: quest retries disabled / 任务重试已关闭.\nreturn\n".encode("utf-8")
 
 STATS_GROUP_NAME = "1. Attack / Defense / Resistance"
 RETRIES_GROUP_NAME = "2. Quest Retries"
-STATS_ON_NAME = "On (2x)"
+KNOCKDOWN_GROUP_NAME = "3. Monster Knockdown"
+STATS_2X_NAME = "On (2x)"
+STATS_4X_NAME = "On (4x)"
 STATS_OFF_NAME = "Off (vanilla)"
 RETRIES_ON_NAME = "On (99)"
 RETRIES_OFF_NAME = "Off (default)"
+KNOCKDOWN_ON_NAME = "On (easy)"
+KNOCKDOWN_OFF_NAME = "Off (vanilla stagger)"
+KNOCKDOWN_DIVISOR = 10.0
+KNOCKDOWN_MIN = 0.01
+DIFFICULTY_RATE_HASH = 0xEE8A3347
+DIFFICULTY_MULTI_HASH = 0x16C7340F
 
 
 @dataclass(frozen=True)
@@ -39,7 +45,7 @@ class FieldSpec:
     type_hash: int
     name: str
     scale_with_multiplier: bool = True
-    addend: int = 0
+    add_resistance: bool = False
     positive_only: bool = True
 
 
@@ -51,6 +57,8 @@ class OptionSpec:
     addon_for: str | None
     menu_priority: int
     kind: str
+    multiplier: int = 1
+    resistance: int = 0
 
 
 OPTIONS = (
@@ -58,9 +66,11 @@ OPTIONS = (
         folder="00 - Easier Hunting",
         name=MOD_NAME,
         description=(
-            f"{MULTIPLIER}x hunter attack/defense, "
-            f"+{RESISTANCE_PER_PIECE} resistance per armor piece, 99 quest retries. "
-            "Open this menu and enable one option in each group."
+            "Hunter attack/defense 2x or 4x, +2 or +4 resistance per armor piece, 99 quest retries, "
+            "easier monster knockdown. Open this menu and enable one option in each group. "
+            "Written entirely by AI; published after human verification. | "
+            "猎人攻击/防御 2 倍或 4 倍，每件防具耐性 +2 或 +4，倒下上限 99，怪物更易击倒。"
+            "每组只开一项。完全由 AI 编写，经人工验证后发布。"
         ),
         addon_for=None,
         menu_priority=50,
@@ -69,26 +79,46 @@ OPTIONS = (
     OptionSpec(
         folder="10 - Stats",
         name=STATS_GROUP_NAME,
-        description="Enable On or Off. Do not enable both.",
+        description="Enable exactly one option. Do not enable more than one. | 只开其中一项，不要多开。",
         addon_for=MOD_NAME,
         menu_priority=20,
         kind="group",
     ),
     OptionSpec(
-        folder="11 - Stats On",
-        name=STATS_ON_NAME,
+        folder="11 - Stats 2x",
+        name=STATS_2X_NAME,
         description=(
-            f"Hunter weapon attack x{MULTIPLIER}, armor defense x{MULTIPLIER}, "
-            f"+{RESISTANCE_PER_PIECE} resistance per piece (~+10 full set)."
+            "Hunter weapon attack x2, armor defense x2, "
+            "+2 resistance per piece (~+10 full set). | "
+            "猎人武器攻击 2 倍，防具防御 2 倍，每件耐性 +2（满装约 +10）。"
+        ),
+        addon_for=STATS_GROUP_NAME,
+        menu_priority=3,
+        kind="stats_on",
+        multiplier=2,
+        resistance=2,
+    ),
+    OptionSpec(
+        folder="12 - Stats 4x",
+        name=STATS_4X_NAME,
+        description=(
+            "Hunter weapon attack x4, armor defense x4, "
+            "+4 resistance per piece (~+20 full set). | "
+            "猎人武器攻击 4 倍，防具防御 4 倍，每件耐性 +4（满装约 +20）。"
         ),
         addon_for=STATS_GROUP_NAME,
         menu_priority=2,
         kind="stats_on",
+        multiplier=4,
+        resistance=4,
     ),
     OptionSpec(
-        folder="12 - Stats Off",
+        folder="13 - Stats Off",
         name=STATS_OFF_NAME,
-        description="Restore vanilla hunter attack, defense, and resistance files.",
+        description=(
+            "Restore vanilla hunter attack, defense, and resistance files. | "
+            "还原原版猎人攻击、防御和耐性。"
+        ),
         addon_for=STATS_GROUP_NAME,
         menu_priority=1,
         kind="stats_off",
@@ -96,7 +126,10 @@ OPTIONS = (
     OptionSpec(
         folder="20 - Retries",
         name=RETRIES_GROUP_NAME,
-        description="Enable On or Off. Do not enable both. Requires REFramework.",
+        description=(
+            "Enable On or Off. Do not enable both. Requires REFramework. | "
+            "只开 On 或 Off，不要两个一起开。需要 REFramework。"
+        ),
         addon_for=MOD_NAME,
         menu_priority=10,
         kind="group",
@@ -104,7 +137,11 @@ OPTIONS = (
     OptionSpec(
         folder="21 - Retries On",
         name=RETRIES_ON_NAME,
-        description="Quest faint/cart cap 99, including the quest board list. Offline / solo / private sessions only.",
+        description=(
+            "Quest faint/cart cap 99, including the quest board list. "
+            "Offline / solo / private sessions only. | "
+            "倒下上限 99（含任务列表）。仅离线 / 单人 / 私人局。"
+        ),
         addon_for=RETRIES_GROUP_NAME,
         menu_priority=2,
         kind="retries_on",
@@ -112,10 +149,47 @@ OPTIONS = (
     OptionSpec(
         folder="22 - Retries Off",
         name=RETRIES_OFF_NAME,
-        description="Remove the 99-cart script (writes an idle stub over the autorun file).",
+        description=(
+            "Remove the 99-cart script (writes an idle stub over the autorun file). | "
+            "去掉 99 次倒下脚本（用空脚本覆盖 autorun）。"
+        ),
         addon_for=RETRIES_GROUP_NAME,
         menu_priority=1,
         kind="retries_off",
+    ),
+    OptionSpec(
+        folder="30 - Knockdown",
+        name=KNOCKDOWN_GROUP_NAME,
+        description=(
+            "Enable On or Off. Do not enable both. | "
+            "只开 On 或 Off，不要两个一起开。"
+        ),
+        addon_for=MOD_NAME,
+        menu_priority=5,
+        kind="group",
+    ),
+    OptionSpec(
+        folder="31 - Knockdown On",
+        name=KNOCKDOWN_ON_NAME,
+        description=(
+            "Part flinch, break, sever, and wound HP about 10x easier. "
+            "Monster HP and attack unchanged. Offline / solo / private sessions only. | "
+            "部位怯/破坏/切断和伤口耐久约为 1/10。怪物血量和攻击不变。仅离线 / 单人 / 私人局。"
+        ),
+        addon_for=KNOCKDOWN_GROUP_NAME,
+        menu_priority=2,
+        kind="knockdown_on",
+    ),
+    OptionSpec(
+        folder="32 - Knockdown Off",
+        name=KNOCKDOWN_OFF_NAME,
+        description=(
+            "Restore vanilla monster part and wound difficulty rates. | "
+            "还原原版怪物部位和伤口难度倍率。"
+        ),
+        addon_for=KNOCKDOWN_GROUP_NAME,
+        menu_priority=1,
+        kind="knockdown_off",
     ),
 )
 
@@ -148,7 +222,7 @@ TARGETS = (
         Path("natives/STM/GameDesign/Common/Equip/ArmorData.user.3"),
         (
             FieldSpec(0x35D72ED3, "_Defense"),
-            FieldSpec(0x35D72ED3, "_Resistance", scale_with_multiplier=False, addend=RESISTANCE_PER_PIECE),
+            FieldSpec(0x35D72ED3, "_Resistance", scale_with_multiplier=False, add_resistance=True),
         ),
     ),
     (
@@ -160,6 +234,13 @@ TARGETS = (
     for weapon in WEAPON_FILES
 )
 
+KNOCKDOWN_PATH = Path("natives/STM/GameDesign/Enemy/CommonData/Data/EmCommonDifficulty2.user.3")
+KNOCKDOWN_FIELDS = tuple(
+    FieldSpec(type_hash, name)
+    for type_hash in (DIFFICULTY_RATE_HASH, DIFFICULTY_MULTI_HASH)
+    for name in ("_PartsVital", "_ScarNormalAndTear", "_ScarRaw")
+)
+
 VALUE_WIDTHS = {
     "S8": 1,
     "U8": 1,
@@ -169,6 +250,7 @@ VALUE_WIDTHS = {
     "U16": 2,
     "S32": 4,
     "U32": 4,
+    "F32": 4,
     "Object": 4,
     "Resource": 4,
     "UserData": 4,
@@ -255,16 +337,39 @@ def walk_instances(data: bytearray, records: list[tuple[int, int]], data_start: 
     return instances, offset
 
 
-def integer_value(data: bytearray, offset: int, field_type: str) -> int:
+def load_instances(data: bytearray, schema: dict):
+    data_start, records = read_rsz(data)
+    instances, stream_end = walk_instances(data, records, data_start, schema)
+    if stream_end != len(data):
+        raise ValueError(f"RSZ stream ends at 0x{stream_end:X}, expected EOF 0x{len(data):X}")
+    return instances
+
+
+def read_value(data: bytearray, offset: int, field_type: str) -> int | float:
+    if field_type == "F32":
+        return struct.unpack_from("<f", data, offset)[0]
     fmt, _minimum, _maximum = INTEGER_LAYOUTS[field_type]
     return struct.unpack_from(fmt, data, offset)[0]
 
 
-def write_integer(data: bytearray, offset: int, field_type: str, value: int) -> None:
+def write_value(data: bytearray, offset: int, field_type: str, value: int | float) -> None:
+    if field_type == "F32":
+        struct.pack_into("<f", data, offset, value)
+        return
     fmt, minimum, maximum = INTEGER_LAYOUTS[field_type]
     if not minimum <= value <= maximum:
         raise ValueError(f"{field_type} overflow: {value}")
     struct.pack_into(fmt, data, offset, value)
+
+
+def knockdown_scaled(value: float) -> float:
+    if value <= 0:
+        return value
+    return max(value / KNOCKDOWN_DIVISOR, KNOCKDOWN_MIN)
+
+
+def packed_float(value: float) -> float:
+    return struct.unpack("<f", struct.pack("<f", value))[0]
 
 
 def resolve_fields(specs: tuple[FieldSpec, ...], schema: dict):
@@ -293,48 +398,63 @@ def value_offsets(data: bytearray, location: int | tuple[int, int], field: dict)
     return tuple(offsets)
 
 
-def transformed_value(value: int, spec: FieldSpec) -> int:
+def field_values(payload: bytes, specs: tuple[FieldSpec, ...], schema: dict):
+    data = bytearray(payload)
+    instances = load_instances(data, schema)
+    definitions, specs_by_type = resolve_fields(specs, schema)
+    values = {spec: [] for spec in specs}
+    for type_hash, fields in instances:
+        for spec in specs_by_type.get(type_hash, ()):
+            field = definitions[spec]
+            values[spec].extend(
+                read_value(data, offset, field["type"])
+                for offset in value_offsets(data, fields[spec.name], field)
+            )
+    return values
+
+
+def transformed_value(value: int, spec: FieldSpec, multiplier: int, resistance: int) -> int:
     if spec.scale_with_multiplier and (value > 0 or not spec.positive_only):
-        value *= MULTIPLIER
-    return value + spec.addend
+        value *= multiplier
+    if spec.add_resistance:
+        value += resistance
+    return value
 
 
-def transform(source: Path, specs: tuple[FieldSpec, ...], schema: dict) -> bytes:
+def transform(
+    source: Path,
+    specs: tuple[FieldSpec, ...],
+    schema: dict,
+    multiplier: int = 1,
+    resistance: int = 0,
+    *,
+    floats: bool = False,
+) -> bytes:
     data = bytearray(source.read_bytes())
-    data_start, records = read_rsz(data)
-    instances, stream_end = walk_instances(data, records, data_start, schema)
-    if stream_end != len(data):
-        raise ValueError(f"RSZ stream ends at 0x{stream_end:X}, expected EOF 0x{len(data):X}")
-
+    instances = load_instances(data, schema)
     definitions, specs_by_type = resolve_fields(specs, schema)
     expected = {spec: [] for spec in specs}
 
     for type_hash, fields in instances:
         for spec in specs_by_type.get(type_hash, ()):
             field = definitions[spec]
+            if floats != (field["type"] == "F32"):
+                raise ValueError(f"{spec.name} is {field['type']}")
             for field_offset in value_offsets(data, fields[spec.name], field):
-                original = integer_value(data, field_offset, field["type"])
-                replacement = transformed_value(original, spec)
-                write_integer(data, field_offset, field["type"], replacement)
-                expected[spec].append(replacement)
+                original = read_value(data, field_offset, field["type"])
+                replacement = (
+                    knockdown_scaled(original)
+                    if floats
+                    else transformed_value(original, spec, multiplier, resistance)
+                )
+                write_value(data, field_offset, field["type"], replacement)
+                expected[spec].append(read_value(data, field_offset, field["type"]))
 
     if any(not values for values in expected.values()):
         missing = [spec.name for spec, values in expected.items() if not values]
         raise ValueError(f"missing expected fields in {source.name}: {', '.join(missing)}")
 
-    verify_start, verify_records = read_rsz(data)
-    verify_instances, verify_end = walk_instances(data, verify_records, verify_start, schema)
-    if verify_end != len(data):
-        raise ValueError(f"post-edit RSZ stream does not reach EOF for {source.name}")
-    actual = {spec: [] for spec in specs}
-    for type_hash, fields in verify_instances:
-        for spec in specs_by_type.get(type_hash, ()):
-            field = definitions[spec]
-            actual[spec].extend(
-                integer_value(data, field_offset, field["type"])
-                for field_offset in value_offsets(data, fields[spec.name], field)
-            )
-    if actual != expected:
+    if field_values(bytes(data), specs, schema) != expected:
         raise ValueError(f"post-edit value verification failed for {source.name}")
 
     return bytes(data)
@@ -367,13 +487,15 @@ def modinfo_bytes(option: OptionSpec) -> bytes:
         lines.append(f"AddonFor={option.addon_for}")
     lines.append(f"MenuPriority={option.menu_priority}")
     lines.append("")
-    return "\n".join(lines).encode("ascii")
+    return "\n".join(lines).encode("utf-8")
 
 
 def option_members(option: OptionSpec) -> set[str]:
     members = {option_path(option, "modinfo.ini")}
     if option.kind in {"stats_on", "stats_off"}:
         members |= {option_path(option, relative.as_posix()) for relative, _specs in TARGETS}
+    if option.kind in {"knockdown_on", "knockdown_off"}:
+        members.add(option_path(option, KNOCKDOWN_PATH.as_posix()))
     if option.kind in {"retries_on", "retries_off"}:
         members.add(option_path(option, RETRY_SCRIPT_ARCHIVE_PATH))
     return members
@@ -389,15 +511,21 @@ def expected_members() -> set[str]:
 def write_option(
     archive: zipfile.ZipFile,
     option: OptionSpec,
-    transformed: dict[str, bytes],
+    scaled: dict[tuple[int, int], dict[str, bytes]],
+    knockdown: bytes,
 ) -> None:
     zip_entry(archive, option_path(option, "modinfo.ini"), modinfo_bytes(option))
     if option.kind == "stats_on":
+        transformed = scaled[(option.multiplier, option.resistance)]
         for relative_path, _specs in TARGETS:
             zip_entry(archive, option_path(option, relative_path.as_posix()), transformed[relative_path.as_posix()])
     elif option.kind == "stats_off":
         for relative_path, _specs in TARGETS:
             zip_entry(archive, option_path(option, relative_path.as_posix()), (SOURCE_DIR / relative_path).read_bytes())
+    elif option.kind == "knockdown_on":
+        zip_entry(archive, option_path(option, KNOCKDOWN_PATH.as_posix()), knockdown)
+    elif option.kind == "knockdown_off":
+        zip_entry(archive, option_path(option, KNOCKDOWN_PATH.as_posix()), (SOURCE_DIR / KNOCKDOWN_PATH).read_bytes())
     elif option.kind == "retries_on":
         zip_entry(archive, option_path(option, RETRY_SCRIPT_ARCHIVE_PATH), RETRY_SCRIPT_PATH.read_bytes())
     elif option.kind == "retries_off":
@@ -406,6 +534,7 @@ def write_option(
 
 def write_checksums(archive: Path) -> None:
     paths = [SOURCE_DIR / relative_path for relative_path, _ in TARGETS]
+    paths.append(SOURCE_DIR / KNOCKDOWN_PATH)
     paths.append(RETRY_SCRIPT_PATH)
     paths.append(archive)
     lines = [f"{sha256(path)}  {path.relative_to(ROOT).as_posix()}" for path in paths]
@@ -414,15 +543,25 @@ def write_checksums(archive: Path) -> None:
 
 def build() -> Path:
     schema = json.loads(SCHEMA_PATH.read_text(encoding="utf-8"))
-    transformed = {
-        relative_path.as_posix(): transform(SOURCE_DIR / relative_path, specs, schema)
-        for relative_path, specs in TARGETS
-    }
+    scaled: dict[tuple[int, int], dict[str, bytes]] = {}
+    for option in OPTIONS:
+        if option.kind != "stats_on":
+            continue
+        key = (option.multiplier, option.resistance)
+        if key in scaled:
+            continue
+        scaled[key] = {
+            relative_path.as_posix(): transform(
+                SOURCE_DIR / relative_path, specs, schema, option.multiplier, option.resistance
+            )
+            for relative_path, specs in TARGETS
+        }
+    knockdown = transform(SOURCE_DIR / KNOCKDOWN_PATH, KNOCKDOWN_FIELDS, schema, floats=True)
     output = DIST_DIR / ARCHIVE_NAME
     output.parent.mkdir(parents=True, exist_ok=True)
     with zipfile.ZipFile(output, "w", compression=zipfile.ZIP_DEFLATED, compresslevel=9) as archive:
         for option in OPTIONS:
-            write_option(archive, option, transformed)
+            write_option(archive, option, scaled, knockdown)
     write_checksums(output)
     return output
 

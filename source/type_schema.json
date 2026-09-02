@@ -4,6 +4,22 @@
     "fields": [],
     "name": ""
   },
+  "1437beef": {
+    "crc": "f231c20d",
+    "fields": [
+      {
+        "align": 8,
+        "array": false,
+        "name": "Value",
+        "native": false,
+        "original_type": "System.Guid",
+        "size": 16,
+        "type": "Guid"
+      }
+    ],
+    "name": "app.cEmParamGuid_Difficulty2_MultiRateTbl",
+    "parent": "app.cEmParamGuidBase"
+  },
   "16bbc454": {
     "crc": "491213",
     "fields": [
@@ -17,7 +33,141 @@
         "type": "Object"
       }
     ],
-    "name": "app.user_data.ArmorUpgradeData"
+    "name": "app.user_data.ArmorUpgradeData",
+    "parent": "ace.user_data.ExcelUserData"
+  },
+  "16c7340f": {
+    "crc": "b7819580",
+    "fields": [
+      {
+        "align": 4,
+        "array": false,
+        "name": "_Count",
+        "native": false,
+        "original_type": "System.Int32",
+        "size": 4,
+        "type": "S32"
+      },
+      {
+        "align": 4,
+        "array": false,
+        "name": "_Health",
+        "native": false,
+        "original_type": "System.Single",
+        "size": 4,
+        "type": "F32"
+      },
+      {
+        "align": 4,
+        "array": false,
+        "name": "_Attack",
+        "native": false,
+        "original_type": "System.Single",
+        "size": 4,
+        "type": "F32"
+      },
+      {
+        "align": 4,
+        "array": false,
+        "name": "_PartsVital",
+        "native": false,
+        "original_type": "System.Single",
+        "size": 4,
+        "type": "F32"
+      },
+      {
+        "align": 4,
+        "array": false,
+        "name": "_Damage",
+        "native": false,
+        "original_type": "System.Single",
+        "size": 4,
+        "type": "F32"
+      },
+      {
+        "align": 4,
+        "array": false,
+        "name": "_BadConditionAddLimit",
+        "native": false,
+        "original_type": "System.Single",
+        "size": 4,
+        "type": "F32"
+      },
+      {
+        "align": 4,
+        "array": false,
+        "name": "_ParalyzeAddLimit",
+        "native": false,
+        "original_type": "System.Single",
+        "size": 4,
+        "type": "F32"
+      },
+      {
+        "align": 4,
+        "array": false,
+        "name": "_StunAddLimit",
+        "native": false,
+        "original_type": "System.Single",
+        "size": 4,
+        "type": "F32"
+      },
+      {
+        "align": 4,
+        "array": false,
+        "name": "_ExhaustAddLimit",
+        "native": false,
+        "original_type": "System.Single",
+        "size": 4,
+        "type": "F32"
+      },
+      {
+        "align": 4,
+        "array": false,
+        "name": "_RideAddLimit",
+        "native": false,
+        "original_type": "System.Single",
+        "size": 4,
+        "type": "F32"
+      },
+      {
+        "align": 4,
+        "array": false,
+        "name": "_SkillStabbingAddLimit",
+        "native": false,
+        "original_type": "System.Single",
+        "size": 4,
+        "type": "F32"
+      },
+      {
+        "align": 4,
+        "array": false,
+        "name": "_SkillRyukiAddLimit",
+        "native": false,
+        "original_type": "System.Single",
+        "size": 4,
+        "type": "F32"
+      },
+      {
+        "align": 4,
+        "array": false,
+        "name": "_ScarNormalAndTear",
+        "native": false,
+        "original_type": "System.Single",
+        "size": 4,
+        "type": "F32"
+      },
+      {
+        "align": 4,
+        "array": false,
+        "name": "_ScarRaw",
+        "native": false,
+        "original_type": "System.Single",
+        "size": 4,
+        "type": "F32"
+      }
+    ],
+    "name": "app.user_data.EmParamDifficulty2.cMultiRate",
+    "parent": "System.Object"
   },
   "16cc7dce": {
     "crc": "238fb2c9",
@@ -32,7 +182,8 @@
         "type": "S32"
       }
     ],
-    "name": "app.EquipDef.SlotLevel_Serializable"
+    "name": "app.EquipDef.SlotLevel_Serializable",
+    "parent": "System.Object"
   },
   "1aa7160d": {
     "crc": "5c1f2dca",
@@ -47,7 +198,78 @@
         "type": "S32"
       }
     ],
-    "name": "app.ArmorDef.ARMOR_PARTS_Serializable"
+    "name": "app.ArmorDef.ARMOR_PARTS_Serializable",
+    "parent": "System.Object"
+  },
+  "1cfe4e4f": {
+    "crc": "1b05f5f6",
+    "fields": [
+      {
+        "align": 4,
+        "array": false,
+        "name": "_ValueM3",
+        "native": false,
+        "original_type": "System.Single",
+        "size": 4,
+        "type": "F32"
+      },
+      {
+        "align": 4,
+        "array": false,
+        "name": "_ValueM2",
+        "native": false,
+        "original_type": "System.Single",
+        "size": 4,
+        "type": "F32"
+      },
+      {
+        "align": 4,
+        "array": false,
+        "name": "_ValueM1",
+        "native": false,
+        "original_type": "System.Single",
+        "size": 4,
+        "type": "F32"
+      },
+      {
+        "align": 4,
+        "array": false,
+        "name": "_Value0",
+        "native": false,
+        "original_type": "System.Single",
+        "size": 4,
+        "type": "F32"
+      },
+      {
+        "align": 4,
+        "array": false,
+        "name": "_ValueP1",
+        "native": false,
+        "original_type": "System.Single",
+        "size": 4,
+        "type": "F32"
+      },
+      {
+        "align": 4,
+        "array": false,
+        "name": "_ValueP2",
+        "native": false,
+        "original_type": "System.Single",
+        "size": 4,
+        "type": "F32"
+      },
+      {
+        "align": 4,
+        "array": false,
+        "name": "_ValueP3",
+        "native": false,
+        "original_type": "System.Single",
+        "size": 4,
+        "type": "F32"
+      }
+    ],
+    "name": "app.user_data.EmParamDifficulty2.cRandomRateTable",
+    "parent": "System.Object"
   },
   "229a3ad8": {
     "crc": "51057f13",
@@ -62,7 +284,8 @@
         "type": "S32"
       }
     ],
-    "name": "app.CustomizePatternID.ID_Serializable"
+    "name": "app.CustomizePatternID.ID_Serializable",
+    "parent": "System.Object"
   },
   "237950f0": {
     "crc": "ca3d1641",
@@ -77,7 +300,8 @@
         "type": "Object"
       }
     ],
-    "name": "app.user_data.ArmorData"
+    "name": "app.user_data.ArmorData",
+    "parent": "ace.user_data.ExcelUserData"
   },
   "246c95d9": {
     "crc": "1edbd431",
@@ -155,7 +379,8 @@
         "type": "Bool"
       }
     ],
-    "name": "app.user_data.ArmorUpgradeData.cData"
+    "name": "app.user_data.ArmorUpgradeData.cData",
+    "parent": "ace.user_data.ExcelUserData.cData"
   },
   "314f7c06": {
     "crc": "9f2315f3",
@@ -170,7 +395,8 @@
         "type": "S32"
       }
     ],
-    "name": "app.ItemDef.RARE_Serializable"
+    "name": "app.ItemDef.RARE_Serializable",
+    "parent": "System.Object"
   },
   "339d8bfa": {
     "crc": "e160779b",
@@ -185,7 +411,8 @@
         "type": "S32"
       }
     ],
-    "name": "app.Wp07ShellLevel.SHELL_LV_Serializable"
+    "name": "app.Wp07ShellLevel.SHELL_LV_Serializable",
+    "parent": "System.Object"
   },
   "339f8997": {
     "crc": "1df96ffe",
@@ -200,7 +427,8 @@
         "type": "S32"
       }
     ],
-    "name": "app.ArmorDef.SERIES_Serializable"
+    "name": "app.ArmorDef.SERIES_Serializable",
+    "parent": "System.Object"
   },
   "33ea8d6d": {
     "crc": "4926cf0a",
@@ -215,7 +443,24 @@
         "type": "S32"
       }
     ],
-    "name": "app.Wp05Def.UNIQUE_TYPE_Serializable"
+    "name": "app.Wp05Def.UNIQUE_TYPE_Serializable",
+    "parent": "System.Object"
+  },
+  "3543a974": {
+    "crc": "4a0759a4",
+    "fields": [
+      {
+        "align": 4,
+        "array": true,
+        "name": "_DataArray",
+        "native": false,
+        "original_type": "app.user_data.EmParamDifficulty2.cDifficultyRate",
+        "size": 4,
+        "type": "Object"
+      }
+    ],
+    "name": "ace.cInstanceGuidArray`1<app.user_data.EmParamDifficulty2.cDifficultyRate>",
+    "parent": "System.Object"
   },
   "35d72ed3": {
     "crc": "8ba703f0",
@@ -320,7 +565,8 @@
         "type": "U32"
       }
     ],
-    "name": "app.user_data.ArmorData.cData"
+    "name": "app.user_data.ArmorData.cData",
+    "parent": "ace.user_data.ExcelUserData.cData"
   },
   "3bc92367": {
     "crc": "906d245e",
@@ -335,7 +581,8 @@
         "type": "S32"
       }
     ],
-    "name": "app.Wp13Def.SPECIAL_AMMO_TYPE_Serializable"
+    "name": "app.Wp13Def.SPECIAL_AMMO_TYPE_Serializable",
+    "parent": "System.Object"
   },
   "4031e646": {
     "crc": "567256d5",
@@ -350,7 +597,8 @@
         "type": "S32"
       }
     ],
-    "name": "app.Wp05Def.WP05_MUSIC_SKILL_HIGH_FREQ_TYPE_Serializable"
+    "name": "app.Wp05Def.WP05_MUSIC_SKILL_HIGH_FREQ_TYPE_Serializable",
+    "parent": "System.Object"
   },
   "40df1fc1": {
     "crc": "3f1c77d5",
@@ -365,7 +613,8 @@
         "type": "S32"
       }
     ],
-    "name": "app.Wp07Def.SHELL_TYPE_Serializable"
+    "name": "app.Wp07Def.SHELL_TYPE_Serializable",
+    "parent": "System.Object"
   },
   "45cb10d": {
     "crc": "c0a2a87c",
@@ -902,7 +1151,33 @@
         "type": "S16"
       }
     ],
-    "name": "app.user_data.WeaponData.cData"
+    "name": "app.user_data.WeaponData.cData",
+    "parent": "ace.user_data.ExcelUserData.cData"
+  },
+  "471d602a": {
+    "crc": "db1c415c",
+    "fields": [
+      {
+        "align": 8,
+        "array": false,
+        "name": "_InstanceGuid",
+        "native": false,
+        "original_type": "System.Guid",
+        "size": 16,
+        "type": "Guid"
+      },
+      {
+        "align": 4,
+        "array": true,
+        "name": "_MultiRateTbl",
+        "native": false,
+        "original_type": "app.user_data.EmParamDifficulty2.cMultiRate",
+        "size": 4,
+        "type": "Object"
+      }
+    ],
+    "name": "app.user_data.EmParamDifficulty2.cMultiRateTable",
+    "parent": "System.Object"
   },
   "539e9094": {
     "crc": "46926d11",
@@ -917,7 +1192,78 @@
         "type": "S32"
       }
     ],
-    "name": "app.HunterDef.Skill_Serializable"
+    "name": "app.HunterDef.Skill_Serializable",
+    "parent": "System.Object"
+  },
+  "651e0cfa": {
+    "crc": "ca9e8f7",
+    "fields": [
+      {
+        "align": 4,
+        "array": false,
+        "name": "_ProbM3",
+        "native": false,
+        "original_type": "System.Int32",
+        "size": 4,
+        "type": "S32"
+      },
+      {
+        "align": 4,
+        "array": false,
+        "name": "_ProbM2",
+        "native": false,
+        "original_type": "System.Int32",
+        "size": 4,
+        "type": "S32"
+      },
+      {
+        "align": 4,
+        "array": false,
+        "name": "_ProbM1",
+        "native": false,
+        "original_type": "System.Int32",
+        "size": 4,
+        "type": "S32"
+      },
+      {
+        "align": 4,
+        "array": false,
+        "name": "_Prob0",
+        "native": false,
+        "original_type": "System.Int32",
+        "size": 4,
+        "type": "S32"
+      },
+      {
+        "align": 4,
+        "array": false,
+        "name": "_ProbP1",
+        "native": false,
+        "original_type": "System.Int32",
+        "size": 4,
+        "type": "S32"
+      },
+      {
+        "align": 4,
+        "array": false,
+        "name": "_ProbP2",
+        "native": false,
+        "original_type": "System.Int32",
+        "size": 4,
+        "type": "S32"
+      },
+      {
+        "align": 4,
+        "array": false,
+        "name": "_ProbP3",
+        "native": false,
+        "original_type": "System.Int32",
+        "size": 4,
+        "type": "S32"
+      }
+    ],
+    "name": "app.user_data.EmParamDifficulty2.cRandomProbabilityTable",
+    "parent": "System.Object"
   },
   "7b28f25e": {
     "crc": "c0bb86a8",
@@ -932,7 +1278,33 @@
         "type": "S32"
       }
     ],
-    "name": "app.MainShellType.TYPE_Serializable"
+    "name": "app.MainShellType.TYPE_Serializable",
+    "parent": "System.Object"
+  },
+  "980c1874": {
+    "crc": "bd860b02",
+    "fields": [
+      {
+        "align": 4,
+        "array": false,
+        "name": "_DefaultLimit",
+        "native": false,
+        "original_type": "System.Single",
+        "size": 4,
+        "type": "F32"
+      },
+      {
+        "align": 4,
+        "array": false,
+        "name": "_AddAndMaxLimit",
+        "native": false,
+        "original_type": "System.Single",
+        "size": 4,
+        "type": "F32"
+      }
+    ],
+    "name": "app.user_data.EmParamDifficulty2.cBadConditionRate",
+    "parent": "System.Object"
   },
   "98cda10e": {
     "crc": "c9ab3a92",
@@ -947,7 +1319,8 @@
         "type": "S32"
       }
     ],
-    "name": "app.BowgunEnergyShellType.POWER_Serializable"
+    "name": "app.BowgunEnergyShellType.POWER_Serializable",
+    "parent": "System.Object"
   },
   "9b3156b1": {
     "crc": "60e3b2d3",
@@ -962,7 +1335,8 @@
         "type": "S32"
       }
     ],
-    "name": "app.WeaponDef.ATTR_Serializable"
+    "name": "app.WeaponDef.ATTR_Serializable",
+    "parent": "System.Object"
   },
   "a3a9ecf8": {
     "crc": "ed7d9dee",
@@ -977,7 +1351,8 @@
         "type": "S32"
       }
     ],
-    "name": "app.EnergyEfficiencyType.TYPE_Serializable"
+    "name": "app.EnergyEfficiencyType.TYPE_Serializable",
+    "parent": "System.Object"
   },
   "a55da899": {
     "crc": "b3a64267",
@@ -992,7 +1367,8 @@
         "type": "Object"
       }
     ],
-    "name": "app.user_data.WeaponData"
+    "name": "app.user_data.WeaponData",
+    "parent": "ace.user_data.ExcelUserData"
   },
   "b81f6db0": {
     "crc": "63035eb0",
@@ -1007,7 +1383,8 @@
         "type": "S32"
       }
     ],
-    "name": "app.MissionIDList.ID_Serializable"
+    "name": "app.MissionIDList.ID_Serializable",
+    "parent": "System.Object"
   },
   "bd0a3e2b": {
     "crc": "2bee37e5",
@@ -1022,7 +1399,8 @@
         "type": "S32"
       }
     ],
-    "name": "app.WeaponDef.ROD_INSECT_LV_Serializable"
+    "name": "app.WeaponDef.ROD_INSECT_LV_Serializable",
+    "parent": "System.Object"
   },
   "cac10626": {
     "crc": "d784972b",
@@ -1037,7 +1415,254 @@
         "type": "S32"
       }
     ],
-    "name": "app.AmmoStrengthType.TYPE_Serializable"
+    "name": "app.AmmoStrengthType.TYPE_Serializable",
+    "parent": "System.Object"
+  },
+  "d21424ae": {
+    "crc": "64df8d4b",
+    "fields": [
+      {
+        "align": 4,
+        "array": true,
+        "name": "_DataArray",
+        "native": false,
+        "original_type": "app.user_data.EmParamDifficulty2.cMultiRateTable",
+        "size": 4,
+        "type": "Object"
+      }
+    ],
+    "name": "ace.cInstanceGuidArray`1<app.user_data.EmParamDifficulty2.cMultiRateTable>",
+    "parent": "System.Object"
+  },
+  "ee8a3347": {
+    "crc": "ffd6f807",
+    "fields": [
+      {
+        "align": 8,
+        "array": false,
+        "name": "_InstanceGuid",
+        "native": false,
+        "original_type": "System.Guid",
+        "size": 16,
+        "type": "Guid"
+      },
+      {
+        "align": 4,
+        "array": false,
+        "name": "_RewardRank",
+        "native": false,
+        "original_type": "app.QuestDef.EM_REWARD_RANK_Serializable",
+        "size": 4,
+        "type": "Object"
+      },
+      {
+        "align": 4,
+        "array": false,
+        "name": "_RewardGrade",
+        "native": false,
+        "original_type": "System.Int32",
+        "size": 4,
+        "type": "S32"
+      },
+      {
+        "align": 4,
+        "array": false,
+        "name": "_Health",
+        "native": false,
+        "original_type": "System.Single",
+        "size": 4,
+        "type": "F32"
+      },
+      {
+        "align": 4,
+        "array": false,
+        "name": "_Attack",
+        "native": false,
+        "original_type": "System.Single",
+        "size": 4,
+        "type": "F32"
+      },
+      {
+        "align": 4,
+        "array": false,
+        "name": "_PartsVital",
+        "native": false,
+        "original_type": "System.Single",
+        "size": 4,
+        "type": "F32"
+      },
+      {
+        "align": 4,
+        "array": false,
+        "name": "_DamageSlashBlow",
+        "native": false,
+        "original_type": "System.Single",
+        "size": 4,
+        "type": "F32"
+      },
+      {
+        "align": 4,
+        "array": false,
+        "name": "_DamageShot",
+        "native": false,
+        "original_type": "System.Single",
+        "size": 4,
+        "type": "F32"
+      },
+      {
+        "align": 4,
+        "array": false,
+        "name": "_Poison",
+        "native": false,
+        "original_type": "app.user_data.EmParamDifficulty2.cBadConditionRate",
+        "size": 4,
+        "type": "Object"
+      },
+      {
+        "align": 4,
+        "array": false,
+        "name": "_Paralyze",
+        "native": false,
+        "original_type": "app.user_data.EmParamDifficulty2.cBadConditionRate",
+        "size": 4,
+        "type": "Object"
+      },
+      {
+        "align": 4,
+        "array": false,
+        "name": "_Sleep",
+        "native": false,
+        "original_type": "app.user_data.EmParamDifficulty2.cBadConditionRate",
+        "size": 4,
+        "type": "Object"
+      },
+      {
+        "align": 4,
+        "array": false,
+        "name": "_Stun",
+        "native": false,
+        "original_type": "app.user_data.EmParamDifficulty2.cBadConditionRate",
+        "size": 4,
+        "type": "Object"
+      },
+      {
+        "align": 4,
+        "array": false,
+        "name": "_Exhaust",
+        "native": false,
+        "original_type": "app.user_data.EmParamDifficulty2.cBadConditionRate",
+        "size": 4,
+        "type": "Object"
+      },
+      {
+        "align": 4,
+        "array": false,
+        "name": "_Explosion",
+        "native": false,
+        "original_type": "app.user_data.EmParamDifficulty2.cBadConditionRate",
+        "size": 4,
+        "type": "Object"
+      },
+      {
+        "align": 4,
+        "array": false,
+        "name": "_Ride",
+        "native": false,
+        "original_type": "app.user_data.EmParamDifficulty2.cBadConditionRate",
+        "size": 4,
+        "type": "Object"
+      },
+      {
+        "align": 4,
+        "array": false,
+        "name": "_SkillStabbing",
+        "native": false,
+        "original_type": "app.user_data.EmParamDifficulty2.cBadConditionRate",
+        "size": 4,
+        "type": "Object"
+      },
+      {
+        "align": 4,
+        "array": false,
+        "name": "_SkillRyuki",
+        "native": false,
+        "original_type": "app.user_data.EmParamDifficulty2.cBadConditionRate",
+        "size": 4,
+        "type": "Object"
+      },
+      {
+        "align": 4,
+        "array": false,
+        "name": "_ScarNormalAndTear",
+        "native": false,
+        "original_type": "System.Single",
+        "size": 4,
+        "type": "F32"
+      },
+      {
+        "align": 4,
+        "array": false,
+        "name": "_ScarRaw",
+        "native": false,
+        "original_type": "System.Single",
+        "size": 4,
+        "type": "F32"
+      },
+      {
+        "align": 4,
+        "array": false,
+        "name": "_DyingHpVitalRate",
+        "native": false,
+        "original_type": "System.Single",
+        "size": 4,
+        "type": "F32"
+      },
+      {
+        "align": 4,
+        "array": false,
+        "name": "_CaptureHpVitalRate",
+        "native": false,
+        "original_type": "System.Single",
+        "size": 4,
+        "type": "F32"
+      },
+      {
+        "align": 4,
+        "array": false,
+        "name": "_MultiTableId",
+        "native": false,
+        "original_type": "app.cEmParamGuid_Difficulty2_MultiRateTbl",
+        "size": 4,
+        "type": "Object"
+      },
+      {
+        "align": 1,
+        "array": false,
+        "name": "_IsTutorial",
+        "native": false,
+        "original_type": "System.Boolean",
+        "size": 1,
+        "type": "Bool"
+      }
+    ],
+    "name": "app.user_data.EmParamDifficulty2.cDifficultyRate",
+    "parent": "System.Object"
+  },
+  "f226c0a0": {
+    "crc": "c0d967f",
+    "fields": [
+      {
+        "align": 4,
+        "array": false,
+        "name": "_Value",
+        "native": false,
+        "original_type": "System.Int32",
+        "size": 4,
+        "type": "S32"
+      }
+    ],
+    "name": "app.QuestDef.EM_REWARD_RANK_Serializable",
+    "parent": "System.Object"
   },
   "f4dcac2": {
     "crc": "225b9b56",
@@ -1052,7 +1677,8 @@
         "type": "S32"
       }
     ],
-    "name": "app.Wp05Def.WP05_HIBIKI_SKILL_TYPE_Serializable"
+    "name": "app.Wp05Def.WP05_HIBIKI_SKILL_TYPE_Serializable",
+    "parent": "System.Object"
   },
   "fc280fe7": {
     "crc": "beef864f",
@@ -1067,7 +1693,8 @@
         "type": "S32"
       }
     ],
-    "name": "app.BowgunEnergyShellType.WEAK_Serializable"
+    "name": "app.BowgunEnergyShellType.WEAK_Serializable",
+    "parent": "System.Object"
   },
   "fcc02ac1": {
     "crc": "80b0100b",
@@ -1082,6 +1709,59 @@
         "type": "S32"
       }
     ],
-    "name": "app.BowgunEnergyShellType.NORMAL_Serializable"
+    "name": "app.BowgunEnergyShellType.NORMAL_Serializable",
+    "parent": "System.Object"
+  },
+  "ff2ca51": {
+    "crc": "2b4a18d4",
+    "fields": [
+      {
+        "align": 4,
+        "array": false,
+        "name": "_DifficultyRateArray",
+        "native": false,
+        "original_type": "ace.cInstanceGuidArray`1<app.user_data.EmParamDifficulty2.cDifficultyRate>",
+        "size": 4,
+        "type": "Object"
+      },
+      {
+        "align": 4,
+        "array": false,
+        "name": "_MultiRateTblArray",
+        "native": false,
+        "original_type": "ace.cInstanceGuidArray`1<app.user_data.EmParamDifficulty2.cMultiRateTable>",
+        "size": 4,
+        "type": "Object"
+      },
+      {
+        "align": 4,
+        "array": true,
+        "name": "_RandomRateTblArray",
+        "native": false,
+        "original_type": "app.user_data.EmParamDifficulty2.cRandomRateTable",
+        "size": 4,
+        "type": "Object"
+      },
+      {
+        "align": 4,
+        "array": true,
+        "name": "_RandomProbabilityTblArray",
+        "native": false,
+        "original_type": "app.user_data.EmParamDifficulty2.cRandomProbabilityTable",
+        "size": 4,
+        "type": "Object"
+      },
+      {
+        "align": 4,
+        "array": true,
+        "name": "_UniqueRateTblArray",
+        "native": false,
+        "original_type": "app.user_data.EmParamDifficulty2.cUniqueRateTable",
+        "size": 4,
+        "type": "Object"
+      }
+    ],
+    "name": "app.user_data.EmParamDifficulty2",
+    "parent": "via.UserData"
   }
 }

@@ -2,3 +2,4 @@
 build/
 *.pyc
 __pycache__/
+tools/_extract_tmp/

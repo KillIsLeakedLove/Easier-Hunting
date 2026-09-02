@@ -32,6 +32,10 @@ The latest official patch containing each file was archived.
 - TwinSword
 - Whistle
 
+## Enemy difficulty
+
+- `EmCommonDifficulty2.user.3`: `re_chunk_000.pak.patch_015.pak`
+
 ## Runtime retry script
 
 - `reframework/easier_hunting_retries.lua`: raises the in-quest retry cap to 99.

@@ -1,6 +1,9 @@
 ---@diagnostic disable: undefined-global
 
 -- Easier Hunting retries: faint cap 99 (list + in-quest HUD + wipe).
+-- 倒下上限 99（任务列表 + 任务内 HUD + 团灭上限）。
+-- Written entirely by AI; published after human verification.
+-- 完全由 AI 编写，经人工验证后发布。
 -- List: makeParamData post writes ParamValue 3 or 5 to 99 (1.7.60).
 -- HUD: Playing-only get_QuestLife to_ptr(99) if pointer bits are 99 (1.7.93).
 -- Wipe: FlowParam PlDieCountMax @ 0xB8 when decode is 1-30.
@@ -12,7 +15,7 @@ local imgui = imgui
 local reframework = reframework
 local log = log
 
-local MOD_NAME = "Easier Hunting: Quest Life"
+local MOD_NAME = "Easier Hunting: Quest Life | 倒下次数"
 local SCRIPT_VERSION = "1.7.96"
 local TARGET = 99
 local IDLE_INTERVAL = 60
@@ -769,11 +772,11 @@ local function install()
     re.on_frame(update)
     re.on_draw_ui(function()
         if imgui.tree_node(MOD_NAME) then
-            imgui.text("Version: " .. SCRIPT_VERSION)
-            imgui.text("Playing: " .. tostring(hunt_playing()))
-            imgui.text("PlDieCountMax: " .. tostring(state.max_deaths))
-            imgui.text("Path: " .. tostring(state.last_path))
-            imgui.text("HUD: " .. (state.hunt_diag ~= "" and state.hunt_diag or "-"))
+            imgui.text("Version / 版本: " .. SCRIPT_VERSION)
+            imgui.text("Playing / 进行中: " .. tostring(hunt_playing()))
+            imgui.text("PlDieCountMax / 倒下上限: " .. tostring(state.max_deaths))
+            imgui.text("Path / 路径: " .. tostring(state.last_path))
+            imgui.text("HUD / 界面: " .. (state.hunt_diag ~= "" and state.hunt_diag or "-"))
             imgui.tree_pop()
         end
     end)

@@ -19,32 +19,8 @@ def sha256(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest().upper()
 
 
-def field_values(payload: bytes, specs: tuple[build_mod.FieldSpec, ...], schema: dict):
-    data = bytearray(payload)
-    data_start, records = build_mod.read_rsz(data)
-    instances, stream_end = build_mod.walk_instances(data, records, data_start, schema)
-    if stream_end != len(data):
-        raise ValueError(f"RSZ stream ends at 0x{stream_end:X}, expected EOF 0x{len(data):X}")
-    definitions, specs_by_type = build_mod.resolve_fields(specs, schema)
-    values = {spec: [] for spec in specs}
-    for type_hash, fields in instances:
-        for spec in specs_by_type.get(type_hash, ()):
-            field = definitions[spec]
-            values[spec].extend(
-                build_mod.integer_value(data, offset, field["type"])
-                for offset in build_mod.value_offsets(data, fields[spec.name], field)
-            )
-    return values
-
-
-def expected_value(value: int, spec: build_mod.FieldSpec) -> int:
-    if spec.scale_with_multiplier and (value > 0 or not spec.positive_only):
-        value *= build_mod.MULTIPLIER
-    return value + spec.addend
-
-
 def verify_modinfo(archive: zipfile.ZipFile, option: build_mod.OptionSpec) -> None:
-    text = archive.read(build_mod.option_path(option, "modinfo.ini")).decode("ascii")
+    text = archive.read(build_mod.option_path(option, "modinfo.ini")).decode("utf-8")
     if f"name={option.name}" not in text:
         raise ValueError(f"{option.folder}: modinfo name mismatch")
     if f"version={build_mod.MOD_VERSION}" not in text:
@@ -56,23 +32,38 @@ def verify_modinfo(archive: zipfile.ZipFile, option: build_mod.OptionSpec) -> No
         raise ValueError(f"{option.folder}: unexpected AddonFor")
 
 
-def verify_stats(archive: zipfile.ZipFile, option: build_mod.OptionSpec, schema: dict, *, scaled: bool) -> None:
-    for relative_path, specs in build_mod.TARGETS:
-        payload = archive.read(build_mod.option_path(option, relative_path.as_posix()))
-        source = (SOURCE_DIR / relative_path).read_bytes()
-        if scaled:
-            source_values = field_values(source, specs, schema)
-            archive_values = field_values(payload, specs, schema)
-            for spec in specs:
-                expected_vals = [expected_value(value, spec) for value in source_values[spec]]
-                if archive_values[spec] != expected_vals:
-                    raise ValueError(f"{option.folder}: stat verify failed {relative_path} {spec.name}")
-        elif payload != source:
-            raise ValueError(f"{option.folder}: vanilla restore mismatch {relative_path}")
+def verify_scaled(
+    archive: zipfile.ZipFile,
+    option: build_mod.OptionSpec,
+    schema: dict,
+    relative: str,
+    source: bytes,
+    specs: tuple[build_mod.FieldSpec, ...],
+    *,
+    scaled: bool,
+) -> None:
+    payload = archive.read(build_mod.option_path(option, relative))
+    if not scaled:
+        if payload != source:
+            raise ValueError(f"{option.folder}: vanilla restore mismatch {relative}")
+        return
+    source_values = build_mod.field_values(source, specs, schema)
+    archive_values = build_mod.field_values(payload, specs, schema)
+    for spec in specs:
+        if option.kind == "knockdown_on":
+            expected = [build_mod.packed_float(build_mod.knockdown_scaled(value)) for value in source_values[spec]]
+        else:
+            expected = [
+                build_mod.transformed_value(value, spec, option.multiplier, option.resistance)
+                for value in source_values[spec]
+            ]
+        if archive_values[spec] != expected:
+            raise ValueError(f"{option.folder}: verify failed {relative} {spec.name}")
 
 
 def verify_archive(schema: dict) -> None:
     expected = build_mod.expected_members()
+    knockdown_source = (SOURCE_DIR / build_mod.KNOCKDOWN_PATH).read_bytes()
     with zipfile.ZipFile(ARCHIVE_PATH) as archive:
         members = {entry.filename for entry in archive.infolist()}
         if members != expected:
@@ -89,10 +80,28 @@ def verify_archive(schema: dict) -> None:
             option_files = {name for name in members if name.startswith(option.folder + "/")}
             if option_files != build_mod.option_members(option):
                 raise ValueError(f"{option.folder}: unexpected files {sorted(option_files)}")
-            if option.kind == "stats_on":
-                verify_stats(archive, option, schema, scaled=True)
-            elif option.kind == "stats_off":
-                verify_stats(archive, option, schema, scaled=False)
+            if option.kind in {"stats_on", "stats_off"}:
+                scaled = option.kind == "stats_on"
+                for relative_path, specs in build_mod.TARGETS:
+                    verify_scaled(
+                        archive,
+                        option,
+                        schema,
+                        relative_path.as_posix(),
+                        (SOURCE_DIR / relative_path).read_bytes(),
+                        specs,
+                        scaled=scaled,
+                    )
+            elif option.kind in {"knockdown_on", "knockdown_off"}:
+                verify_scaled(
+                    archive,
+                    option,
+                    schema,
+                    build_mod.KNOCKDOWN_PATH.as_posix(),
+                    knockdown_source,
+                    build_mod.KNOCKDOWN_FIELDS,
+                    scaled=option.kind == "knockdown_on",
+                )
             elif option.kind == "retries_on":
                 payload = archive.read(build_mod.option_path(option, build_mod.RETRY_SCRIPT_ARCHIVE_PATH))
                 if payload != build_mod.RETRY_SCRIPT_PATH.read_bytes():
@@ -110,6 +119,9 @@ def verify_checksums() -> None:
     for relative_path, _ in build_mod.TARGETS:
         path = SOURCE_DIR / relative_path
         expected_sums[path.relative_to(ROOT).as_posix()] = sha256(path)
+    expected_sums[(SOURCE_DIR / build_mod.KNOCKDOWN_PATH).relative_to(ROOT).as_posix()] = sha256(
+        SOURCE_DIR / build_mod.KNOCKDOWN_PATH
+    )
     expected_sums[build_mod.RETRY_SCRIPT_PATH.relative_to(ROOT).as_posix()] = sha256(build_mod.RETRY_SCRIPT_PATH)
     expected_sums[ARCHIVE_PATH.relative_to(ROOT).as_posix()] = sha256(ARCHIVE_PATH)
 
